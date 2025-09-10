@@ -1,33 +1,11 @@
 let R;
-let timer;
-let timeLabel;
-let b;
+let timerLabel;
+let bttn;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   R = new Renderer();
-  timer = new Timer(3000);
-
-  let x = 100;
-  let height = 100;
-  let size = 60
-  b = R.add(new Button(x, height, size, (self) => {
-    R.selfRemove(self);
-    b = R.add(new Button(x + 120, height, size, (self) => {
-      R.selfRemove(self);
-      b = R.add(new Button(x + 240, height, size, (self) => {
-        
-        if(!timer.isFinished()) {
-          R.add(new Label(width/2, height, "You Won!"));
-        } else {
-          R.add(new Label(width/2, height, "You Ran Out of Time"));
-        }
-        R.selfRemove(self);
-      }));
-    }));
-  }))
-
-  timeLabel = R.add(new Label(width/2, height/3, timer.getSeconds()));
+  testScreen();
 }
 
 function draw() {
@@ -35,9 +13,9 @@ function draw() {
   const dt = deltaTime / 1000;
   R.update(dt);
   R.draw();
-  timeLabel.setText(timer.getSeconds());
-  if(timer.isFinished()){
-    R.remove(b);
+
+  if(timerLabel.timer.isFinished()){
+    R.remove(bttn);
   }
 }
 
@@ -48,4 +26,34 @@ function windowResized() {
 function mousePressed(){
   R.dispatch("mousePressed");
   console.log("clicked! : ", mouseX, mouseY);
+}
+
+function testScreen() {
+  const time = 5;
+  timerLabel = R.add(new CountdownLabel(width / 2, height / 5, time, (self) => {
+    R.selfRemove(self);
+    R.add(new Label(width / 2, height / 5, "Countdown End!"));
+  }))
+
+  const size = 50;
+  const step = 100;
+  const steps = [
+    step, step*2, step*3, step*4, step*5, step*6, step*7, step*8
+  ]
+  spawnButton(0, steps, size);
+}
+
+function spawnButton(i = 0, steps, size) {
+  if (i >= steps.length) {
+    R.remove(timerLabel);
+    R.add(new Label(width / 2, height / 5, "You Won"));
+    return;
+  }
+  if (timerLabel.timer.isFinished()) return;
+
+  const pos = steps[i];
+  bttn = R.add(new Button(pos, height/2, size, (self) => {
+    R.selfRemove(self);
+    spawnButton(i + 1, steps, size);
+  }));
 }
