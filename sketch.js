@@ -22,8 +22,6 @@ function updateOrientation(direction){
     else if(direction == 'right'){
         curOrientation = orientations[(((ind+1)%4)+4)%4]
     }
-
-    console.log(curOrientation);
 }
 
 //
