@@ -1,68 +1,81 @@
 class Renderer {
     constructor() {
-        // objects to render
-        this.objects = [];
+        // layers: map of layer index -> array of objects
+        this.layers = new Map();
 
-        // Objects queued to delete
-        this._objectsToRemove = new Set();
+        // objects queued to delete
+        this._toRemove = new Set();
     }
 
-    // Adds an object to list of things to render
-    add(obj) {
-        this.objects.push(obj);
+    // gets (or creates) array for a layer
+    _getLayer(z = 0) {
+        if (!this.layers.has(z)) this.layers.set(z, []);
+        return this.layers.get(z);
+    }
+
+    // adds an object to a specific layer (default 0)
+    add(obj, z = 0) {
+        obj.__layer = z;
+        this._getLayer(z).push(obj);
         return obj;
     }
 
-    // removes an object
+    // removes an object immediately
     remove(obj) {
-        this._objectsToRemove.add(obj);
+        this._toRemove.add(obj);
         this._deleteObjects();
     }
 
-    // Safley self removes
+    // safely self removes
     selfRemove(obj) {
-        this._objectsToRemove.add(obj)
+        this._toRemove.add(obj);
     }
 
-    // checks if theres anything in objects to delete and deletes them
-    _deleteObjects(){
-        if (this._objectsToRemove.size === 0) 
+    // checks if there’s anything to delete and deletes them
+    _deleteObjects() {
+        if (this._toRemove.size === 0) 
             return;
-        this.objects = this.objects.filter(o => !this._objectsToRemove.has(o));
-        this._objectsToRemove.clear();
+        for (const [z, arr] of this.layers) {
+            this.layers.set(z, arr.filter(o => !this._toRemove.has(o)));
+        }
+        this._toRemove.clear();
     }
 
     update(dt) {
-        // Checks each object for a update function
-        // if objects contains one, calls it
-        for (const o of this.objects) {
-            if (typeof o.update === "function") o.update(dt);
+        // updates each object in ascending layer order
+        for (const z of [...this.layers.keys()].sort((a,b)=>a-b)) {
+            for (const o of this.layers.get(z)) {
+                if (typeof o.update === "function") o.update(dt);
+            }
         }
-        
-        // Deletes Objects on update
+        // deletes objects on update
         this._deleteObjects();
     }
 
     draw() {
-        // Same idea as update
-        for (const o of this.objects) {
-            if (typeof o.draw === "function") o.draw();
+        // draws each object in ascending layer order
+        for (const z of [...this.layers.keys()].sort((a,b)=>a-b)) {
+            for (const o of this.layers.get(z)) {
+                if (typeof o.draw === "function") o.draw();
+            }
         }
     }
 
-    // used for caputring mousePresses or Keyboard Events
+    // used for capturing mousePresses or Keyboard Events
     dispatch(methodName, ...args) {
-        for (const o of this.objects) {
-            const fn = o[methodName];
-            if (typeof fn === "function") fn.apply(o, args);
+        // top-down so higher layers get events first
+        for (const z of [...this.layers.keys()].sort((a,b)=>b-a)) {
+            for (const o of this.layers.get(z)) {
+                const fn = o[methodName];
+                if (typeof fn === "function") fn.apply(o, args);
+            }
         }
-
         this._deleteObjects();
     }
 
-    // Clears everything in the Renderer
-    clear(){
-        this.objects.length = 0;
-        this._objectsToRemove.clear();
+    // clears everything in the renderer
+    clear() {
+        this.layers.clear();
+        this._toRemove.clear();
     }
 }

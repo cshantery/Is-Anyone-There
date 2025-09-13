@@ -1,59 +1,49 @@
 let R;
-let timerLabel;
-let bttn;
+
+let v1, v2, v3, v4;
+let room;
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
-  R = new Renderer();
-  testScreen();
+    createCanvas(windowWidth, windowHeight);
+    R = new Renderer();
+    setupRoom();
 }
 
 function draw() {
-  background(20);
-  const dt = deltaTime / 1000;
-  R.update(dt);
-  R.draw();
-
-  if(timerLabel.timer.isFinished()){
-    R.remove(bttn);
-  }
+    background(20);
+    const dt = deltaTime / 1000;
+    R.update(dt);
+    R.draw();
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
+    resizeCanvas(windowWidth, windowHeight);
 }
 
-function mousePressed(){
-  R.dispatch("mousePressed");
-  console.log("clicked! : ", mouseX, mouseY);
+function mousePressed() {
+    R.dispatch("mousePressed");
+    console.log("clicked! : ", mouseX, mouseY);
+}
+function keyPressed() {
+    R.dispatch("keyPressed");
+}
+function mousePressed() {
+    R.dispatch("mousePressed")
+}
+function mouseReleased() {
+    R.dispatch("mouseReleased");
 }
 
-function testScreen() {
-  const time = 5;
-  timerLabel = R.add(new CountdownLabel(width / 2, height / 5, time, (self) => {
-    R.selfRemove(self);
-    R.add(new Label(width / 2, height / 5, "Countdown End!"));
-  }))
+function setupRoom() {
+    v1 = new EventView();
+    v2 = new TimerView();
+    v3 = new MoveView();
+    v4 = new View(238, 130, 238, "Room 4");
 
-  const size = 50;
-  const step = 100;
-  const steps = [
-    step, step*2, step*3, step*4, step*5, step*6, step*7, step*8
-  ]
-  spawnButton(0, steps, size);
-}
-
-function spawnButton(i = 0, steps, size) {
-  if (i >= steps.length) {
-    R.remove(timerLabel);
-    R.add(new Label(width / 2, height / 5, "You Won"));
-    return;
-  }
-  if (timerLabel.timer.isFinished()) return;
-
-  const pos = steps[i];
-  bttn = R.add(new Button(pos, height/2, size, (self) => {
-    R.selfRemove(self);
-    spawnButton(i + 1, steps, size);
-  }));
+    room = new ViewManager();
+    room.addView(v1);
+    room.addView(v2);
+    room.addView(v3);
+    room.addView(v4);
+    R.add(room);
 }
