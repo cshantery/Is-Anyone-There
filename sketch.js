@@ -6,6 +6,12 @@ let room;
 let startScreen; 
 let showStartScreen = true; 
 
+let gameFont; // could be changed, just adding to make startScreen look better
+
+function preload() { 
+    gameFont = loadFont('assets/font/Jersey10-Regular.ttf')
+}
+
 function setup() {
     createCanvas(windowWidth, windowHeight);
     R = new Renderer();
@@ -14,7 +20,9 @@ function setup() {
     startScreen = new StartScreen(() => {
         showStartScreen = false; 
         setupRoom();
-    })
+    });
+
+    
 }
 
 function draw() {
@@ -44,7 +52,9 @@ function mousePressed() {
     console.log("clicked! : ", mouseX, mouseY);
 }
 function keyPressed() {
+    if(!showStartScreen){
     R.dispatch("keyPressed");
+    }
 }
 
 // function mousePressed() {
@@ -55,7 +65,9 @@ function keyPressed() {
 //     }
 // }
 function mouseReleased() {
+    if(!showStartScreen){
     R.dispatch("mouseReleased");
+    }
 }
 
 function setupRoom() {
