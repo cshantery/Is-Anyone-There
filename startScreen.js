@@ -6,7 +6,7 @@ class StartScreen {
 
         // for the button
         this.btnX = windowWidth / 2 - 75; 
-        this.btnY = windowHeight / 2 + 150;
+        this.btnY = windowHeight / 2 + 120;
         this.btnW = 150; 
         this.btnH = 60;     
         this.label = "Start!"; 
@@ -32,6 +32,7 @@ class StartScreen {
 
     drawStarField() {
         for (let star of this.stars) {
+            star.alpha += random(-5,5);
             stroke(255, star.alpha); // white, transparent
             strokeWeight(star.size);
             point(star.x, star.y);
@@ -39,7 +40,8 @@ class StartScreen {
     }
 
     drawShootingStar() {
-        if (random() > 0.995 && this.step >= 2.5) {
+        if (this.step >= 2.5) {
+            // make a new star after the last one ends
             this.fromX = random(windowWidth);
             this.fromY = random(windowHeight / 2);
             this.toX = random(this.fromX + 50, windowWidth);
@@ -96,7 +98,7 @@ class StartScreen {
         textAlign(CENTER, CENTER);
         textSize(24);
         textFont(gameFont);
-        text(this.label, this.btnX + this.btnW / 2, this.btnY + this.btnH / 2);
+        text(this.label, this.btnX + this.btnW / 2, this.btnY + this.btnH / 2 - 3);
         pop();
     }
 
@@ -110,10 +112,10 @@ class StartScreen {
         fill(255);
         textAlign(CENTER, CENTER);
         textSize(48);
-        textFont(gameFont);
         text(this.title, windowWidth / 2, windowHeight / 2 - 50);
 
         // instruction
+        fill(255);
         textSize(24);
         text(this.instruction, windowWidth / 2, windowHeight / 2 + 20);
 
