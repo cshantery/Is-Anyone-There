@@ -1,12 +1,28 @@
 let R;
 
-let v1, v2, v3, v4;
+let fcView, otherView;
 let room;
+
+// just for temporary development debugging
+let preloadedAsset;
+
+function preload(){
+    console.log('PRELOADING ')
+    preloadedAsset = loadImage(
+    'assets/testObjects/filecabinet.png',
+    (img) => {
+      console.log('Loaded:', img.width, img.height);
+    },
+    (err) => {
+      console.error('Failed to load image', err);
+    }
+  );
+}
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
     R = new Renderer();
-    setupRoom();
+    setupRoom(preloadedAsset);
 }
 
 function draw() {
@@ -34,16 +50,12 @@ function mouseReleased() {
     R.dispatch("mouseReleased");
 }
 
-function setupRoom() {
-    v1 = new EventView();
-    v2 = new TimerView();
-    v3 = new MoveView();
-    v4 = new View(238, 130, 238, "Room 4");
+function setupRoom(temp) {
+    fcView = new FileCabinetView(temp);
+    otherView = new View(238, 130, 238, "Some other orientation...");
 
     room = new ViewManager();
-    room.addView(v1);
-    room.addView(v2);
-    room.addView(v3);
-    room.addView(v4);
+    room.addView(fcView);
+    room.addView(otherView);
     R.add(room);
 }
