@@ -11,8 +11,6 @@ class FileCabinetObject {
         this.ysize = ysize;
         this.onClick = onClick;
 
-        this.baseColor = color(200);
-        this.hoverColor = color(150);
     }
 
     isMouseInBounds(){
@@ -27,10 +25,8 @@ class FileCabinetObject {
     }
 
     draw(){
-        let color = this.isMouseInBounds() ? this.hoverColor : this.baseColor;
         push();
         noStroke()
-        fill(color);
         //rect(this.x, this.y, this.xsize, this.ysize, 8);
         image(this.imageFile, this.x, this.y)
         pop();
@@ -43,6 +39,72 @@ class FileCabinetObject {
     }
 }
 
+class OpenCabinetUIObject {
+    constructor(x, y, xsize, ysize, uiText, uiName, onClick = () => {}){
+        this.x = x;
+        this.y = y;
+
+        this.uiText = uiText; // for now just our secret number
+        this.uiName = uiName; 
+
+        this.xsize = xsize;
+        this.ysize = ysize;
+        this.onClick = onClick;
+
+        this.baseColor = color(122, 128, 134);
+        this.hoverColor = color(122, 128, 134);
+    }
+
+    // adjust bounds so that only X to close is clickable
+    isMouseInBounds(){
+        return (
+            mouseX >= this.x && mouseX <= this.x + this.xsize &&
+            mouseY >= this.y && mouseY <= this.y + this.ysize
+        );
+    }
+
+    update(dt){
+
+    }
+
+    draw(){
+        // ponly draw if visible
+        if(true){
+            let color = this.isMouseInBounds() ? this.hoverColor : this.baseColor;
+            push();
+
+            // draw ui window
+            noStroke()
+            fill(color);
+            rect(this.x, this.y, this.xsize, this.ysize, 8);
+
+            // draw closing x at top right corner
+            fill('black')
+            textSize(40)
+            text('X', this.x+this.xsize-40, this.y+40)
+
+            // draw text in middle of ui
+            fill('black')
+            textSize(150)
+            text(this.uiText, this.x+this.xsize/2, this.y+this.ysize/2)
+            pop();
+
+            // draw name of ui element
+            fill('black')
+            textSize(20)
+            text(this.uiName, this.x+20, this.y+20*2)
+            pop();
+        }
+    }
+
+    mousePressed() {
+        if (this.isMouseInBounds()) {
+            this.onClick(this)
+        };
+    }
+}
+
+
 class FileCabinetView extends View {
     constructor(fcImg, cabinetCount=4) {
         super(172, 170, 172, "");
@@ -52,8 +114,6 @@ class FileCabinetView extends View {
         this.fcImg = fcImg
 
         // fadeout and stuff
-        this.numberVisibility = 0; //for fadout, initially invisible
-
         this.lockedVisibility = 0;
         this.holdFadeout = false;
         this.timer = 0;
@@ -74,8 +134,8 @@ class FileCabinetView extends View {
                 (obj) => {
                     if(obj.id == chosenCabinet){
                         console.log('You have clicked the chosen cabinet, it was id '+obj.id)
-                        console.log(this.showNumber)
-                        this.numberVisibility = 1 //make it totally visible
+
+                        R.add(this.uiObject, 100)
                     }
                     else{
                         console.log('This file cabinet is locked.')
@@ -85,6 +145,16 @@ class FileCabinetView extends View {
                 }
             ))
         }
+
+        this.uiWidth = 600;
+        this.uiHeight = 400;
+
+        this.uiObject = new OpenCabinetUIObject(windowWidth/2 - this.uiWidth/2, windowHeight/2 - this.uiHeight/2, this.uiWidth, this.uiHeight, this.secretNumber,
+            'Mysterious Filing Cabinet',
+            (obj) => {
+                R.remove(this.uiObject)
+            }
+        )
     }
 
     draw(){
@@ -100,10 +170,6 @@ class FileCabinetView extends View {
         // if(this.numberVisibility < 0.1){
         //     this.numberVisibility = 0; 
         // }
-
-        fill(0,0,0, 255*this.numberVisibility)
-        textSize(250);
-        text(this.secretNumber, windowWidth/2, windowHeight/2);
 
         // displaying locked cabinet
         if(this.holdFadeout == false){
@@ -150,5 +216,6 @@ class FileCabinetView extends View {
         for(let c of this.cabinets){
             R.remove(c)
         }
+        R.remove(this.uiObject, 100)
     }
 }
