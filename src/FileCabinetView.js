@@ -25,11 +25,9 @@ class FileCabinetObject {
     }
 
     draw(){
-        push();
         noStroke()
         //rect(this.x, this.y, this.xsize, this.ysize, 8);
         image(this.imageFile, this.x, this.y)
-        pop();
     }
 
     mousePressed() {
@@ -71,7 +69,6 @@ class OpenCabinetUIObject {
         // ponly draw if visible
         if(true){
             let color = this.isMouseInBounds() ? this.hoverColor : this.baseColor;
-            push();
 
             // draw ui window
             noStroke()
@@ -87,13 +84,11 @@ class OpenCabinetUIObject {
             fill('black')
             textSize(150)
             text(this.uiText, this.x+this.xsize/2, this.y+this.ysize/2)
-            pop();
 
             // draw name of ui element
             fill('black')
             textSize(20)
             text(this.uiName, this.x+20, this.y+20*2)
-            pop();
         }
     }
 
@@ -159,9 +154,6 @@ class FileCabinetView extends View {
 
     draw(){
         super.draw();
-        push();
-        
-
         // // displaying number
         // // always exponentially decay visibility of number
         // this.numberVisibility = this.numberVisibility * (1-this.fadoutRate);
@@ -182,8 +174,6 @@ class FileCabinetView extends View {
         fill(0, 0, 0, 255*this.lockedVisibility)
         textSize(30)
         text("This file cabinet is locked...", 30, 60)
-        
-        pop();
     }
 
     update(dt) {
