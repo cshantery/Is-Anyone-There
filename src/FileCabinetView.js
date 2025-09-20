@@ -3,12 +3,11 @@ class FileCabinetObject {
         this.id = id; // for now just using index
         this.x = x;
         this.y = y;
-        this.imageFile = imageFile;
         
-        this.imageFile.resize(xsize, ysize);
+        this.cabinetSprite = new Sprite2D(imageFile, x, y, {width: xsize, height: ysize})
 
         this.xsize = xsize;
-        this.ysize = ysize;
+        this.ysize = ysize; 
         this.onClick = onClick;
 
     }
@@ -25,9 +24,9 @@ class FileCabinetObject {
     }
 
     draw(){
-        noStroke()
-        //rect(this.x, this.y, this.xsize, this.ysize, 8);
-        image(this.imageFile, this.x, this.y)
+        // noStroke()
+        // image(this.imageFile, this.x, this.y)
+        this.cabinetSprite.draw()
     }
 
     mousePressed() {
@@ -125,7 +124,7 @@ class FileCabinetView extends View {
             randx = Math.random() * (windowWidth - 2*cabinetWidth) + cabinetWidth
             randy = Math.random() * (windowHeight - 2*cabinetHeight) + cabinetHeight
             this.cabinets.push(new FileCabinetObject(i, randx, randy, cabinetWidth, cabinetHeight,
-                 this.fcImg,
+                 'assets/testObjects/filecabinet.png',
                 (obj) => {
                     if(obj.id == chosenCabinet){
                         console.log('You have clicked the chosen cabinet, it was id '+obj.id)

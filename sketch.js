@@ -7,16 +7,16 @@ let room;
 let preloadedAsset;
 
 function preload(){
-    console.log('PRELOADING ')
-    preloadedAsset = loadImage(
-    'assets/testObjects/filecabinet.png',
-    (img) => {
-      console.log('Loaded:', img.width, img.height);
-    },
-    (err) => {
-      console.error('Failed to load image', err);
-    }
-  );
+//     console.log('PRELOADING ')
+//     preloadedAsset = loadImage(
+//     'assets/testObjects/filecabinet.png',
+//     (img) => {
+//       console.log('Loaded:', img.width, img.height);
+//     },
+//     (err) => {
+//       console.error('Failed to load image', err);
+//     }
+//   );
 }
 
 function setup() {
