@@ -9,7 +9,7 @@ let showStartScreen = true;
 let gameFont; // could be changed, just adding to make startScreen look better
 
 function preload() { 
-    gameFont = loadFont('assets/font/Jersey10-Regular.ttf')
+    gameFont = loadFont('assets/font/PressStart2P-Regular.ttf')
 }
 
 function setup() {
@@ -20,7 +20,10 @@ function setup() {
     startScreen = new StartScreen(() => {
         showStartScreen = false; 
         setupRoom();
+
+        textFont('sans-serif') // resetting font for the game itself 
     });
+
 
     
 }
@@ -36,6 +39,8 @@ function draw() {
         R.update(dt);
         R.draw()
     }
+
+
 
 }
 

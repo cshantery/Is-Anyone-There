@@ -74,6 +74,7 @@ class StartScreen {
         }
     }
 
+    // made this function to not conflict with existing Button class 
     drawButton() {
         push();
 
@@ -96,9 +97,9 @@ class StartScreen {
         fill(255);
         noStroke();
         textAlign(CENTER, CENTER);
-        textSize(24);
+        textSize(22);
         textFont(gameFont);
-        text(this.label, this.btnX + this.btnW / 2, this.btnY + this.btnH / 2 - 3);
+        text(this.label, this.btnX + this.btnW / 2 + 3, this.btnY + this.btnH / 2);
         pop();
     }
 
@@ -112,6 +113,7 @@ class StartScreen {
         fill(255);
         textAlign(CENTER, CENTER);
         textSize(48);
+        textFont(gameFont);
         text(this.title, windowWidth / 2, windowHeight / 2 - 50);
 
         // instruction
