@@ -1,3 +1,49 @@
+class ComputerView extends View {
+
+    constructor() {
+        super(58, 134, 255, "");
+        this.text = "";
+        this.bttn = new Button(width/2 - 150, height/1.5, 200, () => {
+            this.openComputer();
+        });
+
+        this.ComputerIsOpen_ = false;
+
+        this.ScreenWidth_ = width - 200;
+        this.ScreenHeight_ = height - 100;
+    }
+
+    draw(){
+        super.draw();
+        push();
+        fill(0, 0, 0);
+        textSize(50);
+        if(this.ComputerIsOpen_) {
+            stroke(100);
+            strokeWeight(10);
+            rect(width/2 - this.ScreenWidth_/2, height/2- this.ScreenHeight_/2, this.ScreenWidth_, this.ScreenHeight_);
+        }
+
+        textSize(20);
+        textAlign(CENTER);
+        pop();
+    }
+
+    openComputer() {
+        this.ComputerIsOpen_ = true;
+    }
+
+
+    onEnter() {
+        R.add(this.bttn);
+    }
+
+    onExit() {
+        R.remove(this.bttn);
+    }
+
+}
+
 class TimerView extends View {
     constructor() {
         super(255, 99, 71, "Room 2 - Timer");

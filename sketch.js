@@ -35,7 +35,7 @@ function mouseReleased() {
 }
 
 function setupRoom() {
-    v1 = new EventView();
+    v1 = new ComputerView();
     v2 = new TimerView();
     v3 = new MoveView();
     v4 = new View(238, 130, 238, "Room 4");
