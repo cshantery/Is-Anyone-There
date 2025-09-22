@@ -119,7 +119,7 @@ class FileCabinetView extends View {
         let cabinetWidth = 150;
         let cabinetHeight = 300;
 
-        let coordinates = [[300, 450],[600, 450],[900, 450],[1200, 450]];
+        let coordinates = [[300, 430],[600, 470],[900, 430],[1200, 440]];
 
         // let chosenCabinet = Math.floor(Math.random() * (cabinetCount)); // the one that hides the number
         let chosenCabinet = 2;
