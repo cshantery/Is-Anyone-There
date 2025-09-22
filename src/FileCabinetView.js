@@ -48,6 +48,9 @@ class OpenCabinetUIObject {
         this.ysize = ysize;
         this.onClick = onClick;
 
+        this.secretSprite = new Sprite2D('assets/object/secondNumber.png', this.x+this.xsize/2-75, 
+            this.y+this.ysize/2-75, {width: 200, height: 200})
+
         this.baseColor = color(122, 128, 134);
         this.hoverColor = color(122, 128, 134);
     }
@@ -80,9 +83,10 @@ class OpenCabinetUIObject {
             text('X', this.x+this.xsize-40, this.y+40)
 
             // draw text in middle of ui
-            fill('black')
-            textSize(150)
-            text(this.uiText, this.x+this.xsize/2, this.y+this.ysize/2)
+            // fill('black')
+            // textSize(150)
+            // text(this.uiText, this.x+this.xsize/2, this.y+this.ysize/2)
+            this.secretSprite.draw()
 
             // draw name of ui element
             fill('black')
