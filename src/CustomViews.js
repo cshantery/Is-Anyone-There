@@ -3,14 +3,22 @@ class ComputerView extends View {
     constructor() {
         super(58, 134, 255, "");
         this.text = "";
-        this.bttn = new Button(width/2 - 150, height/1.5, 200, () => {
-            this.openComputer();
-        });
-
         this.ComputerIsOpen_ = false;
 
         this.ScreenWidth_ = width - 200;
         this.ScreenHeight_ = height - 100;
+
+        this.bttn = new ConditionalButton(width/2 - 100, height/1.5 - 50, 200, () => {
+            this.openComputer();
+        }, true, 128, 128, 128);
+
+        this.closebttn = new ConditionalButton(width/2+this.ScreenWidth_/2-20, height/2-this.ScreenHeight_/2-20, 50, () => {
+            this.closeComputer();
+        }, false, 200, 35, 35);
+
+        this.pinbttn = new ConditionalButton(width/2 + 300, height/1.5 - 50, 60, () => {
+            this.openComputer();
+        }, true, 255, 255, 255);
     }
 
     draw(){
@@ -22,6 +30,15 @@ class ComputerView extends View {
             stroke(100);
             strokeWeight(10);
             rect(width/2 - this.ScreenWidth_/2, height/2- this.ScreenHeight_/2, this.ScreenWidth_, this.ScreenHeight_);
+            this.closebttn.CanDraw();
+            this.bttn.NotDraw();
+            this.pinbttn.NotDraw();
+        }
+
+        if(!this.ComputerIsOpen_) {
+            this.bttn.CanDraw();
+            this.closebttn.NotDraw();
+            this.pinbttn.CanDraw();
         }
 
         textSize(20);
@@ -33,13 +50,20 @@ class ComputerView extends View {
         this.ComputerIsOpen_ = true;
     }
 
+    closeComputer() {
+        this.ComputerIsOpen_ = false;
+    }
 
     onEnter() {
         R.add(this.bttn);
+        R.add(this.closebttn);
+        R.add(this.pinbttn);
     }
 
     onExit() {
         R.remove(this.bttn);
+        R.remove(this.closebttn);
+        R.remove(this.pinbttn);
     }
 
 }
