@@ -4,9 +4,12 @@ class ComputerView extends View {
         super(58, 134, 255, "");
         this.text = "";
         this.ComputerIsOpen_ = false;
+        this.PinIsOpen_ = false;
 
         this.ScreenWidth_ = width - 200;
         this.ScreenHeight_ = height - 100;
+        this.PinWidth_ = width/2;
+        this.PinHeight_ = this.ScreenHeight_;
 
         this.bttn = new ConditionalButton(width/2 - 100, height/1.5 - 50, 200, () => {
             this.openComputer();
@@ -17,16 +20,25 @@ class ComputerView extends View {
         }, false, 200, 35, 35);
 
         this.pinbttn = new ConditionalButton(width/2 + 300, height/1.5 - 50, 60, () => {
-            this.openComputer();
+            this.openPin();
         }, true, 255, 255, 255);
+
+        this.closepinbttn = new ConditionalButton(width/2+this.PinWidth_/2-40, height/2-this.PinHeight_/2+1-20, 80, () => {
+            this.closePin();
+        }, false, 200, 35, 35);
+    
+        //---------------------------------------- Pinpad Setup ----------------------------------
+
+        this.PinString_ = "Enter Pin: ";
     }
 
     draw(){
         super.draw();
         push();
-        fill(0, 0, 0);
         textSize(50);
         if(this.ComputerIsOpen_) {
+            this.PinIsOpen_ = false;
+            fill(0, 0, 0);
             stroke(100);
             strokeWeight(10);
             rect(width/2 - this.ScreenWidth_/2, height/2- this.ScreenHeight_/2, this.ScreenWidth_, this.ScreenHeight_);
@@ -35,10 +47,27 @@ class ComputerView extends View {
             this.pinbttn.NotDraw();
         }
 
-        if(!this.ComputerIsOpen_) {
+        if(!this.ComputerIsOpen_ && !this.PinIsOpen_) {
             this.bttn.CanDraw();
             this.closebttn.NotDraw();
             this.pinbttn.CanDraw();
+            this.closepinbttn.NotDraw();
+        }
+
+        if(this.PinIsOpen_) {
+            this.ComputerIsOpen_ = false;
+            fill(255, 255, 255);
+            stroke(0);
+            strokeWeight(15);
+            rect(width/2 - this.PinWidth_/2, height/2- this.PinHeight_/2, this.PinWidth_, this.PinHeight_, 50);
+            fill(0, 0, 0);
+            strokeWeight(0);
+            rect(width/2 - this.PinWidth_/2 + 50, height/2- this.PinHeight_/2 +70, this.PinWidth_-90, this.PinHeight_/6);
+            fill('limegreen');
+            text(this.PinString_ , width/2 - this.PinWidth_/2 + 65, height/2- this.PinHeight_/2 +135);
+            this.closepinbttn.CanDraw();
+            this.bttn.NotDraw();
+            this.pinbttn.NotDraw();
         }
 
         textSize(20);
@@ -54,16 +83,26 @@ class ComputerView extends View {
         this.ComputerIsOpen_ = false;
     }
 
+    openPin() {
+        this.PinIsOpen_ = true;
+    }
+
+    closePin() {
+        this.PinIsOpen_ = false;
+    }
+
     onEnter() {
         R.add(this.bttn);
         R.add(this.closebttn);
         R.add(this.pinbttn);
+        R.add(this.closepinbttn);
     }
 
     onExit() {
         R.remove(this.bttn);
         R.remove(this.closebttn);
         R.remove(this.pinbttn);
+        R.remove(this.closebttn);
     }
 
 }
