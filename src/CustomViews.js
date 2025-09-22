@@ -32,7 +32,7 @@ class ComputerView extends View {
         this.PinAttempt_ = "";
         this.PinString_ = "Enter Pin: ";
         this.PinCount_ = 0;
-        this.Password_ = "111";
+        this.Password_ = "393";
         this.PinMessage_ == "";
 
         this.pinbttn1 = new ConditionalButton(width/2 - this.PinWidth_/2 + 105, height/2- this.PinHeight_/2 +175 , 100, () => {
@@ -70,6 +70,10 @@ class ComputerView extends View {
         this.pinbttn9 = new ConditionalButton(width/2 - this.PinWidth_/2 + 405, height/2- this.PinHeight_/2 + 415, 100, () => {
             this.PinPress("9");
         }, false, 200,200,200, true);
+
+        //-------------------------Console Interaction---------------------
+        this.givenCommand_ = "";
+        this.EnterPressed_ = false;
     }
 
     draw(){
@@ -78,10 +82,22 @@ class ComputerView extends View {
         textSize(50);
         if(this.ComputerIsOpen_) {
             this.PinIsOpen_ = false;
-            fill(0, 0, 0);
             stroke(100);
             strokeWeight(10);
+            fill(0,0,0);
             rect(width/2 - this.ScreenWidth_/2, height/2- this.ScreenHeight_/2, this.ScreenWidth_, this.ScreenHeight_);
+            textSize(25);
+            strokeWeight(0);
+            fill(255,255,255);
+            text("> Type Command for Computer...ENTER to execute", width/2 - this.ScreenWidth_/2 + 25, height/2- this.ScreenHeight_/2 + 50);
+            text("> " + this.givenCommand_, width/2 - this.ScreenWidth_/2 + 25, height/2- this.ScreenHeight_/2 + 115);
+            if(this.EnterPressed_) {
+                text("> Command : " + this.givenCommand_ + " : EXECUTED", width/2 - this.ScreenWidth_/2 + 25, height/2- this.ScreenHeight_/2 + 180);
+                text("> Closing Terminal...", width/2 - this.ScreenWidth_/2 + 25, height/2- this.ScreenHeight_/2 + 245);
+                setTimeout(() => {
+                    this.closeComputer();
+                }, "2000");
+            }
             this.closebttn.CanDraw();
             this.bttn.NotDraw();
             this.pinbttn.NotDraw();
@@ -147,6 +163,8 @@ class ComputerView extends View {
 
     closeComputer() {
         this.ComputerIsOpen_ = false;
+        this.givenCommand_ = "";
+        this.EnterPressed_ = false;
     }
 
     openPin() {
@@ -179,6 +197,19 @@ class ComputerView extends View {
             }
         }
     }
+
+    keyPressed() {
+        if (keyCode === ENTER && this.givenCommand_ !== "") {
+            this.EnterPressed_ = true;
+        }
+        else if(keyCode === BACKSPACE) {
+            this.givenCommand_ = this.givenCommand_.substring(0, this.givenCommand_.length - 1); 
+        }
+        else {
+            this.givenCommand_ = this.givenCommand_ + key;
+        }
+    }
+
 
     onEnter() {
         R.add(this.bttn);
