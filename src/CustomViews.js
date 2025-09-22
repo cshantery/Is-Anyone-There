@@ -6,22 +6,25 @@ class ComputerView extends View {
         this.ComputerIsOpen_ = false;
         this.PinIsOpen_ = false;
 
+        this.pinpadimg_ = loadImage('../assets/testObjects/pinpad.png');
+        this.backgroundimg_ = loadImage('../assets/testObjects/NorthWall.png');
+
         this.ScreenWidth_ = width - 200;
         this.ScreenHeight_ = height - 100;
         this.PinWidth_ = width/2;
         this.PinHeight_ = this.ScreenHeight_;
 
-        this.bttn = new ConditionalButton(width/2 - 100, height/1.5 - 50, 200, () => {
+        this.bttn = new ConditionalButton(width/7, height/20, 800,() => {
             this.openComputer();
-        }, true, 128, 128, 128, false);
+        }, true, 128, 128, 128, true);
 
         this.closebttn = new ConditionalButton(width/2+this.ScreenWidth_/2-20, height/2-this.ScreenHeight_/2-20, 50, () => {
             this.closeComputer();
         }, false, 200, 35, 35, false);
 
-        this.pinbttn = new ConditionalButton(width/2 + 300, height/1.5 - 50, 60, () => {
+        this.pinbttn = new ConditionalButton(width/2 + 500, height/1.5 - 150, 80, () => {
             this.openPin();
-        }, true, 255, 255, 255, false);
+        }, true, 255, 255, 255, true);
 
         this.closepinbttn = new ConditionalButton(width/2+this.PinWidth_/2-40, height/2-this.PinHeight_/2+1-20, 80, () => {
             this.closePin();
@@ -78,6 +81,7 @@ class ComputerView extends View {
 
     draw(){
         super.draw();
+        background(this.backgroundimg_);
         push();
         textSize(50);
         if(this.ComputerIsOpen_) {
@@ -104,6 +108,8 @@ class ComputerView extends View {
         }
 
         if(!this.ComputerIsOpen_ && !this.PinIsOpen_) {
+            image(this.pinpadimg_, width/2 + 500, height/1.5 - 150,);
+            this.pinpadimg_.resize(80, 80);
             this.bttn.CanDraw();
             this.closebttn.NotDraw();
             this.pinbttn.CanDraw();
