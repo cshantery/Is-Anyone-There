@@ -29,7 +29,47 @@ class ComputerView extends View {
     
         //---------------------------------------- Pinpad Setup ----------------------------------
 
+        this.PinAttempt_ = "";
         this.PinString_ = "Enter Pin: ";
+        this.PinCount_ = 0;
+        this.Password_ = "111";
+        this.PinMessage_ == "";
+
+        this.pinbttn1 = new ConditionalButton(width/2 - this.PinWidth_/2 + 275, height/2- this.PinHeight_/2 +260 , 100, () => {
+            this.PinPress("1");
+        }, false, 200,200,200);
+
+        this.pinbttn2 = new ConditionalButton(0, 0, 100, () => {
+            this.PinPress("2");
+        }, false, 200,200,200);
+        
+        this.pinbttn3 = new ConditionalButton(0, 0, 100, () => {
+            this.PinPress("3");
+        }, false, 200,200,200);
+
+        this.pinbttn4 = new ConditionalButton(0, 0, 100, () => {
+            this.PinPress("4");
+        }, false, 200,200,200);
+
+        this.pinbttn5 = new ConditionalButton(0, 0, 100, () => {
+            this.PinPress("5");
+        }, false, 200,200,200);
+
+        this.pinbttn6 = new ConditionalButton(0, 0, 100, () => {
+            this.PinPress("6");
+        }, false, 200,200,200);
+
+        this.pinbttn7 = new ConditionalButton(0, 0, 100, () => {
+            this.PinPress("7");
+        }, false, 200,200,200);
+
+        this.pinbttn8 = new ConditionalButton(0, 0, 100, () => {
+            this.PinPress("8");
+        }, false, 200,200,200);
+
+        this.pinbttn9 = new ConditionalButton(0, 0, 100, () => {
+            this.PinPress("9");
+        }, false, 200,200,200);
     }
 
     draw(){
@@ -52,6 +92,15 @@ class ComputerView extends View {
             this.closebttn.NotDraw();
             this.pinbttn.CanDraw();
             this.closepinbttn.NotDraw();
+            this.pinbttn1.NotDraw();
+            this.pinbttn2.NotDraw();
+            this.pinbttn3.NotDraw();
+            this.pinbttn4.NotDraw();
+            this.pinbttn5.NotDraw();
+            this.pinbttn6.NotDraw();
+            this.pinbttn7.NotDraw();
+            this.pinbttn8.NotDraw();
+            this.pinbttn9.NotDraw();
         }
 
         if(this.PinIsOpen_) {
@@ -63,9 +112,18 @@ class ComputerView extends View {
             fill(0, 0, 0);
             strokeWeight(0);
             rect(width/2 - this.PinWidth_/2 + 50, height/2- this.PinHeight_/2 +70, this.PinWidth_-90, this.PinHeight_/6);
+            fill('black');
+            textSize(30);
+            text(this.PinMessage_, width/2 - this.PinWidth_/2 + 125, height/2- this.PinHeight_/2+50);
             fill('limegreen');
-            text(this.PinString_ , width/2 - this.PinWidth_/2 + 65, height/2- this.PinHeight_/2 +135);
+            textSize(50);
+            text(this.PinString_ + this.PinAttempt_ , width/2 - this.PinWidth_/2 + 65, height/2- this.PinHeight_/2 +135);
+            for (let i = 1; i < 10; i += 1) {
+                textSize(100);
+                text(i , width/2 - this.PinWidth_/2 +(150*((i-1)%3)) +125, height/2- this.PinHeight_/2 +135+(125*ceil(i/3)));
+            }
             this.closepinbttn.CanDraw();
+            this.pinbttn1.CanDraw();
             this.bttn.NotDraw();
             this.pinbttn.NotDraw();
         }
@@ -89,6 +147,27 @@ class ComputerView extends View {
 
     closePin() {
         this.PinIsOpen_ = false;
+        this.PinMessage_ = "";
+    }
+
+    PinPress(key) {
+        this.PinAttempt_ = this.PinAttempt_ + key;
+        this.PinCount_++;
+        if(this.PinCount_ == 3) {
+            if(this.PinAttempt_ === this.Password_) {
+                this.PinMessage_ = "Correct Pin Entered!";
+                this.PinCount_ = 0;
+                this.PinAttempt_ = "";
+                setTimeout(() => {
+                    this.closePin();
+                }, "1500");
+            }
+            else {
+                this.PinMessage_ = "Incorrect Pin, Try Again";
+                this.PinCount_ = 0;
+                this.PinAttempt_ = "";
+            }
+        }
     }
 
     onEnter() {
@@ -96,6 +175,15 @@ class ComputerView extends View {
         R.add(this.closebttn);
         R.add(this.pinbttn);
         R.add(this.closepinbttn);
+        R.add(this.pinbttn1);
+        R.add(this.pinbttn2);
+        R.add(this.pinbttn3);
+        R.add(this.pinbttn4);
+        R.add(this.pinbttn5);
+        R.add(this.pinbttn6);
+        R.add(this.pinbttn7);
+        R.add(this.pinbttn8);
+        R.add(this.pinbttn9);
     }
 
     onExit() {
@@ -103,6 +191,15 @@ class ComputerView extends View {
         R.remove(this.closebttn);
         R.remove(this.pinbttn);
         R.remove(this.closebttn);
+        R.remove(this.pinbttn1);
+        R.remove(this.pinbttn2);
+        R.remove(this.pinbttn3);
+        R.remove(this.pinbttn4);
+        R.remove(this.pinbttn5);
+        R.remove(this.pinbttn6);
+        R.remove(this.pinbttn7);
+        R.remove(this.pinbttn8);
+        R.remove(this.pinbttn9);
     }
 
 }
