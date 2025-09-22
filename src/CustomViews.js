@@ -13,19 +13,19 @@ class ComputerView extends View {
 
         this.bttn = new ConditionalButton(width/2 - 100, height/1.5 - 50, 200, () => {
             this.openComputer();
-        }, true, 128, 128, 128);
+        }, true, 128, 128, 128, false);
 
         this.closebttn = new ConditionalButton(width/2+this.ScreenWidth_/2-20, height/2-this.ScreenHeight_/2-20, 50, () => {
             this.closeComputer();
-        }, false, 200, 35, 35);
+        }, false, 200, 35, 35, false);
 
         this.pinbttn = new ConditionalButton(width/2 + 300, height/1.5 - 50, 60, () => {
             this.openPin();
-        }, true, 255, 255, 255);
+        }, true, 255, 255, 255, false);
 
         this.closepinbttn = new ConditionalButton(width/2+this.PinWidth_/2-40, height/2-this.PinHeight_/2+1-20, 80, () => {
             this.closePin();
-        }, false, 200, 35, 35);
+        }, false, 200, 35, 35, false);
     
         //---------------------------------------- Pinpad Setup ----------------------------------
 
@@ -35,41 +35,41 @@ class ComputerView extends View {
         this.Password_ = "111";
         this.PinMessage_ == "";
 
-        this.pinbttn1 = new ConditionalButton(width/2 - this.PinWidth_/2 + 275, height/2- this.PinHeight_/2 +260 , 100, () => {
+        this.pinbttn1 = new ConditionalButton(width/2 - this.PinWidth_/2 + 105, height/2- this.PinHeight_/2 +175 , 100, () => {
             this.PinPress("1");
-        }, false, 200,200,200);
+        }, false, 200,200,200, true);
 
-        this.pinbttn2 = new ConditionalButton(0, 0, 100, () => {
+        this.pinbttn2 = new ConditionalButton(width/2 - this.PinWidth_/2 + 255, height/2- this.PinHeight_/2 +175, 100, () => {
             this.PinPress("2");
-        }, false, 200,200,200);
+        }, false, 200,200,200, true);
         
-        this.pinbttn3 = new ConditionalButton(0, 0, 100, () => {
+        this.pinbttn3 = new ConditionalButton(width/2 - this.PinWidth_/2 + 405, height/2- this.PinHeight_/2 +175, 100, () => {
             this.PinPress("3");
-        }, false, 200,200,200);
+        }, false, 200,200,200, true);
 
-        this.pinbttn4 = new ConditionalButton(0, 0, 100, () => {
+        this.pinbttn4 = new ConditionalButton(width/2 - this.PinWidth_/2 + 105, height/2- this.PinHeight_/2 + 295, 100, () => {
             this.PinPress("4");
-        }, false, 200,200,200);
+        }, false, 200,200,200, true);
 
-        this.pinbttn5 = new ConditionalButton(0, 0, 100, () => {
+        this.pinbttn5 = new ConditionalButton(width/2 - this.PinWidth_/2 + 255, height/2- this.PinHeight_/2 + 295, 100, () => {
             this.PinPress("5");
-        }, false, 200,200,200);
+        }, false, 200,200,200, true);
 
-        this.pinbttn6 = new ConditionalButton(0, 0, 100, () => {
+        this.pinbttn6 = new ConditionalButton(width/2 - this.PinWidth_/2 + 405, height/2- this.PinHeight_/2 + 295, 100, () => {
             this.PinPress("6");
-        }, false, 200,200,200);
+        }, false, 200,200,200, true);
 
-        this.pinbttn7 = new ConditionalButton(0, 0, 100, () => {
+        this.pinbttn7 = new ConditionalButton(width/2 - this.PinWidth_/2 + 105, height/2- this.PinHeight_/2 + 415, 100, () => {
             this.PinPress("7");
-        }, false, 200,200,200);
+        }, false, 200,200,200, true);
 
-        this.pinbttn8 = new ConditionalButton(0, 0, 100, () => {
+        this.pinbttn8 = new ConditionalButton(width/2 - this.PinWidth_/2 + 255, height/2- this.PinHeight_/2 + 415, 100, () => {
             this.PinPress("8");
-        }, false, 200,200,200);
+        }, false, 200,200,200, true);
 
-        this.pinbttn9 = new ConditionalButton(0, 0, 100, () => {
+        this.pinbttn9 = new ConditionalButton(width/2 - this.PinWidth_/2 + 405, height/2- this.PinHeight_/2 + 415, 100, () => {
             this.PinPress("9");
-        }, false, 200,200,200);
+        }, false, 200,200,200, true);
     }
 
     draw(){
@@ -123,9 +123,17 @@ class ComputerView extends View {
                 text(i , width/2 - this.PinWidth_/2 +(150*((i-1)%3)) +125, height/2- this.PinHeight_/2 +135+(125*ceil(i/3)));
             }
             this.closepinbttn.CanDraw();
-            this.pinbttn1.CanDraw();
             this.bttn.NotDraw();
             this.pinbttn.NotDraw();
+            this.pinbttn1.CanDraw();
+            this.pinbttn2.CanDraw();
+            this.pinbttn3.CanDraw();
+            this.pinbttn4.CanDraw();
+            this.pinbttn5.CanDraw();
+            this.pinbttn6.CanDraw();
+            this.pinbttn7.CanDraw();
+            this.pinbttn8.CanDraw();
+            this.pinbttn9.CanDraw();
         }
 
         textSize(20);
@@ -148,6 +156,8 @@ class ComputerView extends View {
     closePin() {
         this.PinIsOpen_ = false;
         this.PinMessage_ = "";
+        this.PinAttempt_ = "";
+        this.PinCount_ = 0;
     }
 
     PinPress(key) {

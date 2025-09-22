@@ -37,7 +37,7 @@ class Button {
 }
 
 class ConditionalButton {
-    constructor(x, y, size, onClick = () => {}, bool, c1, c2, c3){
+    constructor(x, y, size, onClick = () => {}, bool, c1, c2, c3, bool2){
         this.x = x;
         this.y = y;
         this.size = size;
@@ -47,6 +47,7 @@ class ConditionalButton {
         this.hoverColor = color(c1*0.8, c2*0.8, c3*0.8);
 
         this.CanDraw_ = bool;
+        this.makeInvis_ = bool2;
     }
 
     CanDraw() {
@@ -69,7 +70,7 @@ class ConditionalButton {
     }
 
     draw(){
-        if(this.CanDraw_) {
+        if(this.CanDraw_ && !this.makeInvis_) {
             let color = this.isMouseInBounds() ? this.hoverColor : this.baseColor;
             push();
             noStroke()
