@@ -7,6 +7,7 @@ function setup() {
     createCanvas(windowWidth, windowHeight);
     R = new Renderer();
     setupRoom();
+    R.add(new ScreenTimer(), 99);
 }
 
 function draw() {
