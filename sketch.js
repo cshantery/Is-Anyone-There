@@ -5,6 +5,7 @@ let room;
 
 // just for temporary development debugging
 let preloadedAsset;
+let backgroundFC;
 
 function preload(){
 //     console.log('PRELOADING ')
@@ -17,6 +18,7 @@ function preload(){
 //       console.error('Failed to load image', err);
 //     }
 //   );
+    backgroundFC = loadImage('assets/background/EastWallNoFC&Paper.png')
 }
 
 function setup() {
@@ -51,7 +53,7 @@ function mouseReleased() {
 }
 
 function setupRoom(temp) {
-    fcView = new FileCabinetView(temp);
+    fcView = new FileCabinetView(backgroundFC, temp);
     otherView = new View(238, 130, 238, "Some other orientation...");
 
     room = new ViewManager();

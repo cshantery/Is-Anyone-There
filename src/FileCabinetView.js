@@ -100,12 +100,13 @@ class OpenCabinetUIObject {
 
 
 class FileCabinetView extends View {
-    constructor(fcImg, cabinetCount=4) {
+    constructor(backgroundImg, fcImg, cabinetCount=4) {
         super(172, 170, 172, "");
         this.fadoutRate = 0.03 // smaller, slower
         this.secretNumber = "8"; // number to display
         this.cabinets = []
         this.fcImg = fcImg
+        this.backgroundImg = backgroundImg
 
         // fadeout and stuff
         this.lockedVisibility = 0;
@@ -118,11 +119,14 @@ class FileCabinetView extends View {
         let cabinetWidth = 150;
         let cabinetHeight = 300;
 
-        let chosenCabinet = Math.floor(Math.random() * (cabinetCount)); // the one that hides the number
+        let coordinates = [[300, 450],[600, 450],[900, 450],[1200, 450]];
+
+        // let chosenCabinet = Math.floor(Math.random() * (cabinetCount)); // the one that hides the number
+        let chosenCabinet = 2;
 
         for(let i = 0; i < cabinetCount; i++){
-            randx = Math.random() * (windowWidth - 2*cabinetWidth) + cabinetWidth
-            randy = Math.random() * (windowHeight - 2*cabinetHeight) + cabinetHeight
+            randx = coordinates[i][0]
+            randy = coordinates[i][1]
             this.cabinets.push(new FileCabinetObject(i, randx, randy, cabinetWidth, cabinetHeight,
                  'assets/testObjects/filecabinet.png',
                 (obj) => {
@@ -153,6 +157,8 @@ class FileCabinetView extends View {
 
     draw(){
         super.draw();
+
+        background(this.backgroundImg)
         // // displaying number
         // // always exponentially decay visibility of number
         // this.numberVisibility = this.numberVisibility * (1-this.fadoutRate);
