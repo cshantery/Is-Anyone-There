@@ -52,18 +52,22 @@ class ScreenTimer {
         let tw = textWidth(this.label) + pad * 2;
         let th = textAscent() + textDescent() + pad * 2;
 
-        rectMode(CENTER);
+        let x = 10;
+        let y = 10;
+
+        rectMode(CORNER);
         fill(0);
         stroke(150);
         strokeWeight(3);
-        rect(width / 2, 60, tw, th, 8);
+        rect(x, y, tw, th, 8);
 
         noStroke();
         drawingContext.shadowBlur = 20;
         drawingContext.shadowColor = color(255, 0, 0);
         fill(255, 0, 0);
-        text(this.label, width / 2, 60);
+        //text(this.label, width / 2, 60);
 
+        text(this.label, x + tw / 2, y + th / 2);
         drawingContext.shadowBlur = 0;
         pop();
     }
