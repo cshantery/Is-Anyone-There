@@ -8,18 +8,18 @@ class View {
     }
 
     draw() {
-        push();
+        vw.push();
         
-        fill(this.r, this.g, this.b);
-        noStroke();
-        rect(0, 0, width, height);
+        vw.fill(this.r, this.g, this.b);
+        vw.noStroke();
+        vw.rect(0, 0, width, height);
 
-        fill(0, 0, 0);
-        textAlign(CENTER, CENTER);
-        textSize(50);
-        text(this.name , width/2, height/2);
+        vw.fill(0, 0, 0);
+        vw.textAlign(CENTER, CENTER);
+        vw.textSize(50);
+        vw.text(this.name , width/2, height/2);
         
-        pop();
+        vw.pop();
     }
 
     // These two will be changed later on, so far this was just a quick and easy solution so yeah

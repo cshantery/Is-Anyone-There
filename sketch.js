@@ -1,3 +1,11 @@
+const vWidth = 320;
+const vHeight = 180;
+const scale = 6;
+
+let vw; // virtual window
+
+let cnv; // canvas
+
 let R;
 
 let fcView, otherView;
@@ -17,7 +25,9 @@ function preload() {
 }
 
 function setup() {
-    createCanvas(windowWidth, windowHeight);
+    cnv = createCanvas(vWidth * scale, vHeight * scale);
+
+    vw = createGraphics(vWidth, vHeight);
     R = new Renderer();
 
      // for start screen 
@@ -34,7 +44,7 @@ function setup() {
 }
 
 function draw() {
-    background(20);
+    vw.background(20);
     const dt = deltaTime / 1000;
 
     if(showStartScreen){
@@ -42,15 +52,21 @@ function draw() {
         startScreen.draw(); 
     } else {
         R.update(dt);
-        R.draw()
+        R.draw();
     }
 
 
 
 }
 
+function centerCanvas() {
+  let x = (windowWidth - width) / 2;
+  let y = (windowHeight - height) / 2;
+  cnv.position(x, y);
+}
+
 function windowResized() {
-    resizeCanvas(windowWidth, windowHeight);
+  centerCanvas(); // Just reposition, not resize
 }
 
 function mousePressed() {
