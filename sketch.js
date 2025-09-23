@@ -3,28 +3,10 @@ let R;
 let fcView, otherView;
 let room;
 
-// just for temporary development debugging
-let preloadedAsset;
-let backgroundFC;
-
-function preload(){
-//     console.log('PRELOADING ')
-//     preloadedAsset = loadImage(
-//     'assets/testObjects/filecabinet.png',
-//     (img) => {
-//       console.log('Loaded:', img.width, img.height);
-//     },
-//     (err) => {
-//       console.error('Failed to load image', err);
-//     }
-//   );
-    backgroundFC = loadImage('assets/background/EastWallNoFC&Paper.png')
-}
-
 function setup() {
     createCanvas(windowWidth, windowHeight);
     R = new Renderer();
-    setupRoom(preloadedAsset);
+    setupRoom();
 }
 
 function draw() {
@@ -52,8 +34,8 @@ function mouseReleased() {
     R.dispatch("mouseReleased");
 }
 
-function setupRoom(temp) {
-    fcView = new FileCabinetView(backgroundFC, temp);
+function setupRoom() {
+    fcView = new FileCabinetView();
     otherView = new View(238, 130, 238, "Some other orientation...");
 
     room = new ViewManager();
