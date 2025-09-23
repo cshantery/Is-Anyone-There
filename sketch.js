@@ -26,6 +26,7 @@ function setup() {
 
 
     
+    R.add(new ScreenTimer(), 99);
 }
 
 function draw() {
