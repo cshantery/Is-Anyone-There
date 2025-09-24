@@ -1,42 +1,53 @@
 class MoveBlock {
-    constructor(x, y, size) {
-        this.x = x;
-        this.y = y;
-        this.size = size;
-        this.drag = false;
-        this.dragDifference = [0,0];
-        this.color = [Math.random() * 255, Math.random() * 255, Math.random() * 255];
-    }
+  constructor(x, y, size) {
+    this.x = x;
+    this.y = y;
+    this.size = size;
 
-    isMouseInBounds(){
-        return (
-            mouseX >= this.x && mouseX <= this.x + this.size &&
-            mouseY >= this.y && mouseY <= this.y + this.size
-        );
-    }
+    this.drag = false;
+    this.dragDx = 0;
+    this.dragDy = 0;
 
-    update(dt) {
-        if(this.drag) {
-            this.x = mouseX - this.dragDifference[0];
-            this.y = mouseY - this.dragDifference[1];
-        }
-    }
+    this.color = [random(255), random(255), random(255)];
+  }
 
-    draw() {
-        push();
-        fill(this.color[0], this.color[1], this.color[2]);
-        noStroke();
-        rect(this.x, this.y, this.size, this.size, 20);
-        pop();
-    }
+  isMouseInBounds(mx, my) {
+    const m = mx != null && my != null ? { x: mx, y: my } : VM.mouse();
+    return (
+      m.x >= this.x &&
+      m.x <= this.x + this.size &&
+      m.y >= this.y &&
+      m.y <= this.y + this.size
+    );
+  }
 
-    mousePressed() {
-        if(this.isMouseInBounds()){
-            this.drag = true;
-            this.dragDifference = [mouseX - this.x, mouseY - this.y];
-        }
+  update(dt) {
+    if (!this.drag) return;
+
+    const m = VM.mouse();
+    this.x = m.x - this.dragDx;
+    this.y = m.y - this.dragDy;
+  }
+
+  draw() {
+    const u = VM.u();
+    const v = VM.v();
+
+    noStroke();
+    fill(this.color[0], this.color[1], this.color[2]);
+    rect(this.x * u, this.y * v, this.size * u, this.size * v, 8);
+  }
+
+  mousePressed(p) {
+    if (this.isMouseInBounds(p?.x, p?.y)) {
+      const m = VM.mouse();
+      this.drag = true;
+      this.dragDx = m.x - this.x;
+      this.dragDy = m.y - this.y;
     }
-    mouseReleased() {
-        this.drag = false;
-    }
+  }
+
+  mouseReleased() {
+    this.drag = false;
+  }
 }

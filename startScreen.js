@@ -1,139 +1,141 @@
-class StartScreen { 
-    constructor(startNow) {
-        this.title = "Is Anyone There?"; 
-        this.instruction = "Click to Begin!";
-        this.onStart = startNow; 
+class StartScreenView extends View {
+  constructor(onStart) {
+    super(0, 0, 0, '');
+    this.onStart = onStart;
 
-        // for the button
-        this.btnX = windowWidth / 2 - 75; 
-        this.btnY = windowHeight / 2 + 120;
-        this.btnW = 150; 
-        this.btnH = 60;     
-        this.label = "Start!"; 
+    // Button in 16:9 units (centered horizontally)
+    this.btnW = 2.8;
+    this.btnH = 0.9;
+    this.btnX = 8 - this.btnW / 2;
+    this.btnY = 5.8;
 
-        // shooting star variables
-        this.fromX = 0; 
-        this.fromY = 0; 
-        this.toX = 0; 
-        this.toY = 0; 
-        this.step = 3; // tracker of shooting star
+    this.title = 'Is Anyone There?';
+    this.instruction = 'Click to Begin!';
 
-        // making all the stars
-        this.stars = [];
-        for (let i = 0; i < 200; i++) {
-            this.stars.push({
-                x: random(windowWidth),
-                y: random(windowHeight),
-                size: random(1, 3),
-                alpha: random(100, 255) // the brightness 
-            });
-        }
+    // Star field in units
+    this.stars = Array.from({ length: 200 }, () => ({
+      x: random(16),
+      y: random(9),
+      r: random(0.02, 0.06),
+      a: random(120, 255)
+    }));
+
+    // Shooting star in units
+    this.fromX = 0;
+    this.fromY = 0;
+    this.toX = 0;
+    this.toY = 0;
+    this.step = 3;
+  }
+
+  drawStarField() {
+    const u = VM.u();
+    const v = VM.v();
+
+    for (const s of this.stars) {
+      s.a += random(-5, 5);
+      stroke(255, s.a);
+      strokeWeight(s.r * u);
+      point(s.x * u, s.y * v);
+    }
+  }
+
+  drawShootingStar() {
+    const u = VM.u();
+    const v = VM.v();
+
+    if (this.step >= 2.5) {
+      this.fromX = random(16);
+      this.fromY = random(4.5);
+      this.toX = random(this.fromX + 0.5, 16);
+      this.toY = random(this.fromY + 0.2, 4.5);
+      this.step = 0;
     }
 
-    drawStarField() {
-        for (let star of this.stars) {
-            star.alpha += random(-5,5);
-            stroke(255, star.alpha); // white, transparent
-            strokeWeight(star.size);
-            point(star.x, star.y);
-        }
+    if (this.step < 2.5) {
+      const n = this.step + 0.02;
+
+      stroke(0, 20, 80, 30);
+      strokeWeight(0.03 * u);
+      line(this.fromX * u, this.fromY * v, this.toX * u, this.toY * v);
+
+      if (this.step < 1) {
+        stroke(255, (1 - this.step) * 200);
+        strokeWeight(0.02 * u);
+
+        const ax = lerp(this.fromX, this.toX, this.step);
+        const ay = lerp(this.fromY, this.toY, this.step);
+        const bx = lerp(this.fromX, this.toX, n);
+        const by = lerp(this.fromY, this.toY, n);
+
+        line(ax * u, ay * v, bx * u, by * v);
+      }
+
+      this.step = n;
+    }
+  }
+
+  drawButton() {
+    const u = VM.u();
+    const v = VM.v();
+
+    const m = VM.mouse();
+    const hover =
+      m.x >= this.btnX &&
+      m.x <= this.btnX + this.btnW &&
+      m.y >= this.btnY &&
+      m.y <= this.btnY + this.btnH;
+
+    if (hover) {
+      fill(100, 150, 255, 200);
+      stroke(150, 200, 255, 150);
+      strokeWeight(0.08 * u);
+    } else {
+      fill(50, 100, 200, 200);
+      noStroke();
     }
 
-    drawShootingStar() {
-        if (this.step >= 2.5) {
-            // make a new star after the last one ends
-            this.fromX = random(windowWidth);
-            this.fromY = random(windowHeight / 2);
-            this.toX = random(this.fromX + 50, windowWidth);
-            this.toY = random(this.fromY + 20, windowHeight / 2);
-            this.step = 0;
-        }
+    rect(this.btnX * u, this.btnY * v, this.btnW * u, this.btnH * v, 0.5 * u);
 
-        // path of shooting star + its animation
-        if (this.step < 2.5) {
-            let nextStep = this.step + 0.02;
+    fill(255);
+    noStroke();
+    textAlign(CENTER, CENTER);
+    textFont(gameFont);
+    textSize(0.25 * v);
+    const cx = (this.btnX + this.btnW / 2) * u;
+    const cy = (this.btnY + this.btnH / 2) * v;
+    text('Start!', Math.round(cx), Math.round(cy));
+  }
 
-            // faint trail
-            strokeWeight(3);
-            stroke(0, 20, 80, 30);
-            line(this.fromX, this.fromY, this.toX, this.toY);
+  draw() {
+    background(0, 20, 80, 25);
 
-            // bright moving part
-            strokeWeight(2);
-            if (this.step < 1) {
-                stroke(255, (1 - this.step) * 200);
-                line(
-                    lerp(this.fromX, this.toX, this.step),
-                    lerp(this.fromY, this.toY, this.step),
-                    lerp(this.fromX, this.toX, nextStep),
-                    lerp(this.fromY, this.toY, nextStep)
-                );
-            }
+    const u = VM.u();
+    const v = VM.v();
 
-            this.step = nextStep; // go to the next step -> continue animation
-        }
-    }
+    this.drawStarField();
+    this.drawShootingStar();
 
-    // made this function to not conflict with existing Button class 
-    drawButton() {
-        push();
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textFont(gameFont);
 
-        // checking if mouse is over button
-        if (
-            mouseX >= this.btnX && mouseX <= this.btnX + this.btnW &&
-            mouseY >= this.btnY && mouseY <= this.btnY + this.btnH
-        ) {
-            fill(100, 150, 255, 200); // hover fill
-            stroke(150, 200, 255, 150); // glowing outline
-            strokeWeight(4);
-        } else {
-            fill(50, 100, 200, 200); // normal fill
-            noStroke();
-        }
+    textSize(0.8 * v);
+    text(this.title, 8 * u, 3.7 * v);
 
-        rect(this.btnX, this.btnY, this.btnW, this.btnH, 12);
+    textSize(0.3 * v);
+    text(this.instruction, 8 * u, 4.6 * v);
 
-        // button label
-        fill(255);
-        noStroke();
-        textAlign(CENTER, CENTER);
-        textSize(22);
-        textFont(gameFont);
-        text(this.label, this.btnX + this.btnW / 2 + 3, this.btnY + this.btnH / 2);
-        pop();
-    }
+    this.drawButton();
+  }
 
-    draw() {
-        background(0, 20, 80, 25); // fading space background
+  mousePressed(p) {
+    const hit =
+      p.x >= this.btnX &&
+      p.x <= this.btnX + this.btnW &&
+      p.y >= this.btnY &&
+      p.y <= this.btnY + this.btnH;
 
-        this.drawStarField();
-        this.drawShootingStar();
-
-        // title
-        fill(255);
-        textAlign(CENTER, CENTER);
-        textSize(48);
-        textFont(gameFont);
-        text(this.title, windowWidth / 2, windowHeight / 2 - 50);
-
-        // instruction
-        fill(255);
-        textSize(24);
-        text(this.instruction, windowWidth / 2, windowHeight / 2 + 20);
-
-        this.drawButton();
-    }
-
-    mousePressed() {
-        if (
-            mouseX >= this.btnX && mouseX <= this.btnX + this.btnW &&
-            mouseY >= this.btnY && mouseY <= this.btnY + this.btnH
-        ) {
-            if (this.onStart) this.onStart();
-        }
-    }
-
-    update(dt) {
-        // nothing needed
-    }
+    if (hit && this.onStart) this.onStart();
+  }
 }
