@@ -1,5 +1,6 @@
 let cnv;
 let R;
+let SM = new SpriteManager(); // Sprite Manager
 
 // Views and game elements
 let startScreen;
@@ -28,6 +29,8 @@ function fit16x9() {
 }
 
 function preload() {
+  loadSprites();
+
   gameFont     = loadFont('assets/font/PressStart2P-Regular.ttf');
   backgroundFC = loadImage('assets/background/EastWallNoFC&Paper.png');
 }
@@ -39,7 +42,7 @@ function setup() {
   R = new Renderer();
 
   startScreen = new StartScreenView(() => {
-    R.remove(startScreen);
+    R.selfRemove(startScreen);
 
     // Switch to game views
     textFont('sans-serif');
@@ -71,6 +74,7 @@ function mousePressed() {
   // Dispatch mouse in 16:9 unit space
   const m = VM.mouse();
   if (!VM.insideUnits(m)) return;
+  // console.log(m.x, m.y);
   R.dispatch('mousePressed', m);
 }
 

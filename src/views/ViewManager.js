@@ -1,6 +1,6 @@
 class View {
   // Very Temporary Constructor later will be probably replaced with sprites and other stuff
-  constructor(r, g, b, name) {
+  constructor(r=0, g=0, b=0, name="") {
     this.r = r;
     this.g = g;
     this.b = b;
