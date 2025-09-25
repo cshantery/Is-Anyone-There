@@ -1,15 +1,4 @@
-/**
- * Buttons using 16:9 units.
- * Renders with VM.u()/VM.v() and hit-tests with VM.mouse().
- */
-
 class Button {
-  /**
-   * @param {number} x   left in units (0..16)
-   * @param {number} y   top in units  (0..9)
-   * @param {number} size width/height in units (square)
-   * @param {Function} onClick callback
-   */
   constructor(x, y, size, onClick = () => {}) {
     this.x = x;
     this.y = y;

@@ -14,36 +14,22 @@
 
   <body>
     
-    <!-- 1) third-party -->
-    <script src="lib/p5.min.js"></script>
-    <script src="lib/p5.sound.min.js"></script>
+    <script src="src/core/VM.js"></script>
+    <script src="src/core/Renderer.js"></script>
+    <script src="src/core/ImportSprites.js"></script>
 
-    <!-- 2) engine/core -->
-    <script src="src/Renderer.js"></script>
-    <script src="src/Timer.js"></script>
-    <script src="src/ViewManager.js"></script>
-    <script src="src/ImportSprites.js"></script> <!-- only include ONCE -->
+    <script src="src/components/Timer.js"></script>
+    <script src="src/components/Button.js"></script>
+    <script src="src/components/MoveBlock.js"></script>
+    <script src="src/components/Label.js"></script>
 
-    <!-- 3) VM helpers (units + mouse) -->
-    <script src="src/VM.js"></script> <!-- placed next to sketch.js -->
-
-    <!-- 4) UI atoms (define Button/ConditionalButton BEFORE views use them) -->
-    <script src="src/Label.js"></script>
-    <script src="src/Button.js"></script>
-    <script src="src/MoveBlock.js"></script>
-
-    <!-- 5) features -->
-    <script src="src/FileCabinetView.js"></script>
-
-    <!-- 6) your combined views (uses Button/ConditionalButton) -->
-    <script src="src/CustomViews.js"></script>
-
-    <!-- 7) start screen (after core + UI) -->
-    <script src="startScreen.js"></script> <!-- or whatever file defines StartScreenView -->
-
-    <!-- 8) app boot (references views) -->
+    <script src="src/views/ViewManager.js"></script>
+    <script src="src/views/ComputerView.js"></script>
+    <script src="src/views/CustomViews.js"></script>
+    <script src="src/views/FileCabinetView.js"></script>
+    <script src="src/views/StartScreenView.js"></script>
+    
     <script src="sketch.js"></script>
-
 
   </body>
 </html>
