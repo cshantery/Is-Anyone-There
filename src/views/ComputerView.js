@@ -222,7 +222,7 @@ class ComputerView extends View {
         this.pinpad.setPos(12.5, 6);
 
         this.terminalHighlight = new HighlightEvent(
-            2.33, 0.25, 6.6, 10.1, 255, 255, 0,
+            2.33, 0.25, 10.1, 6.6, 255, 255, 0,
             (self) => {
                 R.selfRemove(self);
                 R.remove(this.pinpadHighlight);
@@ -235,7 +235,7 @@ class ComputerView extends View {
         );
 
 
-        this.pinpadHighlight = new HighlightEvent(12.5, 6, 1.45, 1.3, 255, 255, 0, (self) => {
+        this.pinpadHighlight = new HighlightEvent(12.5, 6, 1.3, 1.45, 255, 255, 0, (self) => {
             console.log("Pinpad");
             R.selfRemove(self);
             R.remove(this.terminalHighlight);

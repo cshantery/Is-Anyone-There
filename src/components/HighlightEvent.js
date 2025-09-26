@@ -1,5 +1,5 @@
 class HighlightEvent {
-    constructor(x, y, height, width, r, g, b, onClick = () => {}) {
+    constructor(x, y, width, height, r, g, b, onClick = () => {}) {
         this.x = x;
         this.y = y;
         this.height = height;

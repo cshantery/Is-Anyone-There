@@ -4,6 +4,12 @@ function loadSprites() {
     SM.add("FileCabinet", loadImage('assets/testObjects/filecabinet.png'));
     SM.add("NorthWall", loadImage('assets/testObjects/NorthWall.png')); 
     SM.add("pinpad", loadImage('assets/testObjects/pinpad.png'));
+    SM.add("SouthWall", loadImage('assets/SouthWall.png'))
+
+    SM.add("FileCabinet1", loadImage('assets/testObjects/filecabinet.png'));
+    SM.add("FileCabinet2", loadImage('assets/testObjects/filecabinet.png'));
+    SM.add("FileCabinet3", loadImage('assets/testObjects/filecabinet.png'));
+    SM.add("FileCabinet4", loadImage('assets/testObjects/filecabinet.png'));
 }
 
 class SpriteManager {
@@ -42,6 +48,20 @@ class Sprite {
     setPos(x, y) {
         this.x = x;
         this.y = y; 
+    }
+
+    getNativeSize() {
+        return [this.src.width, this.src.height];
+    }
+
+    getVirtualSize() {
+        const u = VM.u();
+        const v = VM.v();
+        const dpr = pixelDensity(); // or window.devicePixelRatio
+        return [
+            (this.src.width / dpr) * this.scale / u,
+            (this.src.height / dpr) * this.scale / v
+        ];
     }
 
     draw() {
