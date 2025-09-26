@@ -19,7 +19,7 @@ class DisplayText{
 
         push()
         noStroke()
-        textSize(this.size)
+        textSize(this.size*(u/100))
         textAlign(LEFT, TOP)
         
         // --- temporary bit for visibility - NOT PART OF ACTUAL DISPLAYTEXT CLASS
@@ -51,11 +51,13 @@ class TextNotificationHandler {
      * 
      * @param {Number} x - x coordinate to place text
      * @param {Number} y - y coordinate to place text
+     * @param {Number} z_ind - z index
      * @param {Number} fadeoutRate - how fast the text will fade, must be in range (0,1), lower => slower
      */
-    constructor(x, y, fadeoutRate=0.03){
+    constructor(x, y, zind=100, fadeoutRate=0.03){
         this.x = x;
         this.y = y;
+        this.z_index = zind;
         this.fadeoutRate = fadeoutRate
 
         this.size = 26; // just have it as constant so it's uniform across all views
@@ -95,7 +97,7 @@ class TextNotificationHandler {
     addText(text){
         if(this.text == null){
             this.text = new DisplayText(this.x, this.y, text, this.size)
-            R.add(this.text, 100)
+            R.add(this.text, this.zind)
         }
         /* If we tried to addText again (so if a user clicks what caused the notification), then it will reset timers so the notification
         stays for a bit longer.

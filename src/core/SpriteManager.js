@@ -10,6 +10,8 @@ function loadSprites() {
     SM.add("FileCabinet2", loadImage('assets/testObjects/filecabinet.png'));
     SM.add("FileCabinet3", loadImage('assets/testObjects/filecabinet.png'));
     SM.add("FileCabinet4", loadImage('assets/testObjects/filecabinet.png'));
+
+    SM.add("secondNumber", loadImage('assets/object/secondNumber.png'));
 }
 
 class SpriteManager {
