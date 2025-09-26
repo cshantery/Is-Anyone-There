@@ -1,5 +1,6 @@
 class FileCabinet {
-    constructor(x, y, scale, img,  onClick = () => {}) {
+    constructor(id, x, y, scale, img,  onClick = () => {}) {
+        this.id = id;
         this.x = x;
         this.y = y;
         this.scale = scale;
@@ -46,12 +47,28 @@ class FileCabinetView extends View {
         super(0,0,0,'');
         this.background = SM.get("SouthWall");
         this.background.setSize(16, 9);
-    
+
+        this.textNotificationHandler = new TextNotificationHandler(0.5, 0.85);
+        this.secretId = 2; // index of cabinet that will be unlocked
+
         this.scale = 0.4
-        this.fc1 = new FileCabinet(1, 5.5, this.scale, "FileCabinet1", () => {console.log("File1 Clicked")});
-        this.fc2 = new FileCabinet(5, 5.5, this.scale, "FileCabinet2", () => {console.log("File2 Clicked")});
-        this.fc3 = new FileCabinet(9, 5.5, this.scale, "FileCabinet3", () => {console.log("File3 Clicked")});
-        this.fc4 = new FileCabinet(13, 5.5, this.scale, "FileCabinet4", () => {console.log("File4 Clicked")});
+        this.allFileCabinets = [];
+        for(let i = 0; i < 4; i++){
+            this.allFileCabinets.push(new FileCabinet(i, 1+4*i, 5.5, this.scale, `FileCabinet${i+1}`, (obj) => {
+                console.log(`File Cabinet ${i} Clicked`)
+
+                if(obj.id == this.secretId){
+                    console.log('this is the secret cabinet.')
+                }else{
+                    this.textNotificationHandler.addText('This file cabinet appears to be locked...')
+                    console.log('this is a locked cabinet.')
+                }
+            }));
+        }
+    }
+
+    update(dt){
+        this.textNotificationHandler.update(dt)
     }
 
     draw() {
@@ -59,25 +76,25 @@ class FileCabinetView extends View {
     }
 
     onEnter() {
+        // add objects to renderer
         R.add(this.background);
-        R.add(this.fc1);
-        R.add(this.fc2);
-        R.add(this.fc3);
-        R.add(this.fc4);
-        this.fc1.onEnter();
-        this.fc2.onEnter();
-        this.fc3.onEnter();
-        this.fc4.onEnter();
+        for(let i = 0; i < 4; i++){
+            R.add(this.allFileCabinets[i])
+        }
+        // call onenters
+        for(let i = 0; i < 4; i++){
+            this.allFileCabinets[i].onEnter()
+        }
     }
     onExit() {
         R.remove(this.background);
-        R.remove(this.fc1);
-        R.remove(this.fc2);
-        R.remove(this.fc3);
-        R.remove(this.fc4);
-        this.fc1.onExit();
-        this.fc2.onExit();
-        this.fc3.onExit();
-        this.fc4.onExit();
+        for(let i = 0; i < 4; i++){
+            R.remove(this.allFileCabinets[i])
+        }
+        for(let i = 0; i < 4; i++){
+            this.allFileCabinets[i].onExit()
+        }
+
+        this.textNotificationHandler.cleanup()
     }
 }

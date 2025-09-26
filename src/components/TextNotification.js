@@ -14,6 +14,9 @@ class DisplayText{
     }
 
     draw(){
+        const u = VM.u();
+        const v = VM.v();
+
         push()
         noStroke()
         textSize(this.size)
@@ -22,12 +25,12 @@ class DisplayText{
         // --- temporary bit for visibility - NOT PART OF ACTUAL DISPLAYTEXT CLASS
         let w = textWidth(this.content);
         let h = textAscent() + textDescent();
-        fill(0, 204, 102, 170)
-        rect(this.x-10, this.y-10, w+20, h+20, 8)
+        fill(0, 204, 102, 50)
+        rect(this.x*u-10, this.y*v-10, w+20, h+20, 8)
 
         // ---
         fill(0, 0, 0, this.alpha)
-        text(this.content, this.x, this.y)
+        text(this.content, this.x*u, this.y*v)
         pop()
     }
 
@@ -55,7 +58,8 @@ class TextNotificationHandler {
         this.y = y;
         this.fadeoutRate = fadeoutRate
 
-        this.size = 30; // just have it as constant so it's uniform across all views
+        this.size = 26; // just have it as constant so it's uniform across all views
+        this.alphaCutoff = 5; // remove text notif when alpha less than this value
 
         this.text = null
         this.timer = 0
@@ -79,7 +83,7 @@ class TextNotificationHandler {
             if(!this.holdFadeout){
                 this.text.setAlpha(this.text.getAlpha()*(1-this.fadeoutRate)) // new_alpha = old_alpha * (1-fadeout_rate)
 
-                if(this.text.getAlpha() < 30){
+                if(this.text.getAlpha() < this.alphaCutoff){
                     this.cleanup()
                     this.holdFadeout = true
                 }
