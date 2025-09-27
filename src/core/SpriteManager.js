@@ -11,14 +11,13 @@ function loadSprites() {
     SM.add("FileCabinet2", loadImage('assets/testObjects/filecabinet.png'));
     SM.add("FileCabinet3", loadImage('assets/testObjects/filecabinet.png'));
     SM.add("FileCabinet4", loadImage('assets/testObjects/filecabinet.png'));
-    
+
     SM.add("secondNumber", loadImage('assets/object/secondNumber.png'));
 
     SM.add("SlidingDoor1", loadImage('assets/object/SlidingDoor1.svg'));
     SM.add("SlidingDoor2", loadImage('assets/object/SlidingDoor2.svg'));
     SM.add("SlidingDoor3", loadImage('assets/object/SlidingDoor3.svg'));
     SM.add("SlidingDoor4", loadImage('assets/object/SlidingDoor4.svg'));
-
 }
 
 class SpriteManager {

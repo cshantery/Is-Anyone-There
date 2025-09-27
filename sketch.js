@@ -8,6 +8,7 @@ let fcView, otherView, v1, v2, v3, v4, room;
 
 // Assets
 let backgroundFC;
+let preloadedAsset;
 let gameFont;
 
 function fit16x9() {
@@ -45,7 +46,7 @@ function setup() {
 
     // Switch to game views
     textFont('sans-serif');
-    setupRoom();
+    setupRoom(preloadedAsset);
   });
 
   // High z so it draws on top until removed
@@ -86,12 +87,14 @@ function keyPressed() {
 }
 
 function setupRoom(temp) {
-  fcView = temp ? new FileCabinetView(backgroundFC, temp) : new FileCabinetView();
+  fcView    = new FileCabinetView(backgroundFC, temp);
+  otherView = new View(238, 130, 238, 'Some other orientation...');
 
+  /* example usage of door with another bg 
   const westWall = SM.get("WestWall");
   otherView = new SlidingDoorView([
     { x: 9, y: 5, scale: 0.9 }
-  ], westWall);
+  ], westWall); */ 
 
   v1 = new ComputerView();
   v2 = new TimerView();
