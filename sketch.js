@@ -88,12 +88,24 @@ function keyPressed() {
 
 function setupRoom(temp) {
   fcView    = new FileCabinetView(backgroundFC, temp);
-  otherView = new View(238, 130, 238, 'Some other orientation...');
+  // otherView = new View(238, 130, 238, 'Some other orientation...');
+
+  /* example usage of sliding door view with another background image
+  const westWall = SM.get("WestWall");
+  otherView = new SlidingDoorView([
+    {x : 9, y : 5, scale : .9}
+  ], westWall);
+  */ 
 
   v1 = new ComputerView();
   v2 = new TimerView();
   v3 = new MoveView();
-  v4 = new View(238, 130, 238, 'Room 4');
+  v4 = new SlidingDoorView([ 
+    // essentially, the values are 
+    // x = 6.5 + 2.5 (the doorWidth)
+    // y = 1.75 + 6 (the doorHeight)
+    { x: 6.5, y: 1.75, scale: 0.8}
+  ]); 
 
   room = new ViewManager();
   room.addView(v1);
@@ -101,7 +113,7 @@ function setupRoom(temp) {
   room.addView(v3);
   room.addView(v4);
   room.addView(fcView);
-  room.addView(otherView);
+  // room.addView(otherView);
 
   R.add(room);
 }
