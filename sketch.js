@@ -11,6 +11,7 @@ let backgroundFC;
 let preloadedAsset;
 let gameFont;
 let terminusFont;
+let startScreenMusic;
 
 function fit16x9() {
   const k = Math.min(windowWidth / 16, windowHeight / 9);
@@ -35,6 +36,9 @@ function preload() {
   gameFont     = loadFont('assets/font/PressStart2P-Regular.ttf');
   terminusFont = loadFont('assets/font/terminus.ttf');
   backgroundFC = loadImage('assets/background/EastWallNoFC&Paper.png');
+
+  // Load start screen music
+  startScreenMusic = loadSound('assets/Is_Anybody_There.mp3');
 }
 
 function setup() {
@@ -44,6 +48,10 @@ function setup() {
   R = new Renderer();
 
   startScreen = new StartScreenView(() => {
+    // Stop music when starting game
+    if (startScreenMusic && startScreenMusic.isPlaying()) {
+      startScreenMusic.stop();
+    }
     R.selfRemove(startScreen);
 
     // Switch to game views

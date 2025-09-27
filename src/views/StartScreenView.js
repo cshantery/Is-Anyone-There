@@ -10,7 +10,8 @@ class StartScreenView extends View {
     this.btnY = 5.8;
 
     this.title = 'Is Anyone There?';
-    this.instruction = 'Click to Begin!';
+    this.instruction = 'Click anywhere to start music!';
+    this.musicStarted = false;
 
     // Star field in units
     this.stars = Array.from({ length: 200 }, () => ({
@@ -136,6 +137,16 @@ class StartScreenView extends View {
       p.y >= this.btnY &&
       p.y <= this.btnY + this.btnH;
 
-    if (hit && this.onStart) this.onStart();
+    if (hit && this.onStart) {
+      this.onStart();
+    } else if (!hit && !this.musicStarted) {
+      // Start music on any click on the start screen (not just the button)
+      if (startScreenMusic && !startScreenMusic.isPlaying()) {
+        startScreenMusic.setLoop(true);
+        startScreenMusic.play();
+        this.musicStarted = true;
+        this.instruction = 'Click Start to Begin!';
+      }
+    }
   }
 }
