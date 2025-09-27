@@ -5,6 +5,7 @@ function loadSprites() {
     SM.add("NorthWall", loadImage('assets/demoRoom/PCWall.webp')); 
     SM.add("pinpad", loadImage('assets/testObjects/pinpad.png'));
     SM.add("SouthWall", loadImage('assets/SouthWall.png'))
+    SM.add("WestWall", loadImage('assets/WestWall.png'))
 
     SM.add("FileCabinet1", loadImage('assets/testObjects/filecabinet.png'));
     SM.add("FileCabinet2", loadImage('assets/testObjects/filecabinet.png'));
@@ -13,6 +14,11 @@ function loadSprites() {
 
     SM.add("secondNumber", loadImage('assets/object/secondNumber.png'));
     SM.add("screen", loadImage('assets/object/screen.webp'));
+
+    SM.add("SlidingDoor1", loadImage('assets/object/SlidingDoor1.svg'));
+    SM.add("SlidingDoor2", loadImage('assets/object/SlidingDoor2.svg'));
+    SM.add("SlidingDoor3", loadImage('assets/object/SlidingDoor3.svg'));
+    SM.add("SlidingDoor4", loadImage('assets/object/SlidingDoor4.svg'));
 }
 
 class SpriteManager {
@@ -37,6 +43,17 @@ class Sprite {
         this.y = y;
         this.scale = scale / 100;
         this.customSize = null;
+    }
+
+    clone() {
+        const copy = new Sprite(this.src);
+        copy.x = this.x;
+        copy.y = this.y;
+        copy.scale = this.scale * 100; // convert back to original scale
+        if (this.customSize) {
+            copy.customSize = { ...this.customSize };
+        }
+        return copy;
     }
 
     setScale(scale) {

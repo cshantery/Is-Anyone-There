@@ -102,7 +102,7 @@ class OpenCabinetUI {
 class FileCabinetView extends View {
     constructor() {
         super(0,0,0,'');
-        this.background = SM.get("SouthWall");
+        this.background = SM.get("WestWall");
         this.background.setSize(16, 9);
 
         this.textNotificationHandler = new TextNotificationHandler(0.5, 0.85);
