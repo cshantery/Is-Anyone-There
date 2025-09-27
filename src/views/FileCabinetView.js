@@ -1,3 +1,11 @@
+/**
+ * Note to anyone using this as a reference for making views:
+ * Pay close attention to the z-index (which elements are on top) when doing R.add(SOMETHING),
+ * For e.g:
+ *      Z-index of the FileCabinet object's sprite must be greater than z-index of the room
+ *      background image.
+ */
+
 class FileCabinet {
     constructor(id, x, y, scale, img,  onClick = () => {}) {
         this.id = id;
@@ -27,7 +35,7 @@ class FileCabinet {
     }
 
     onEnter() {
-        R.add(this.background, 99)
+        R.add(this.background, 9)
         R.add(this.highlight);
     }
     onExit() {
@@ -42,6 +50,55 @@ class FileCabinet {
     }
 }
 
+class OpenCabinetUI {
+  constructor(onExit = () => {}) {
+    this.onExit = onExit;
+
+    this._closeBtn = new Button(11.5, 2.4, 0.6, (self) => {
+      R.selfRemove(self);
+      R.remove(this);
+      onExit();
+      this.onRemove()
+    });
+    
+    this.numberImage = SM.get('secondNumber');
+    this.numberImage.setPos(7, 3.4);
+    this.numberImage.setScale(4);
+  }
+
+  draw() {
+    const u = VM.u(), v = VM.v();
+
+    push();
+    fill(169,169,169);
+    stroke(255);
+    strokeWeight(2);
+    rect(3.5 * u, 2.2 * v, 9 * u, 4.6666 * v, 10);
+
+    pop();
+  }
+
+  update(dt) {}
+
+  keyPressed() {
+
+  }
+
+  /* The following two member functions just for removing what's on the UI. Call add before adding OpenCabinetUI to R
+  and call remove when removing OpenCabinetUI to R
+  
+  TODO: I'm sure there is a way of doing this without these*/
+  onAdd(){
+    R.add(this._closeBtn, 11);
+    R.add(this.numberImage, 15)
+  }
+
+  onRemove() {
+    R.remove(this._closeBtn);
+    R.remove(this.numberImage)
+  }
+} 
+
 class FileCabinetView extends View {
     constructor() {
         super(0,0,0,'');
@@ -50,6 +107,8 @@ class FileCabinetView extends View {
 
         this.textNotificationHandler = new TextNotificationHandler(0.5, 0.85);
         this.secretId = 2; // index of cabinet that will be unlocked
+        
+        this.cabinetUI = new OpenCabinetUI();
 
         this.scale = 0.4
         this.allFileCabinets = [];
@@ -59,6 +118,8 @@ class FileCabinetView extends View {
 
                 if(obj.id == this.secretId){
                     console.log('this is the secret cabinet.')
+                    this.cabinetUI.onAdd()
+                    R.add(this.cabinetUI, 10)
                 }else{
                     this.textNotificationHandler.addText('This file cabinet appears to be locked...')
                     console.log('this is a locked cabinet.')
@@ -88,6 +149,10 @@ class FileCabinetView extends View {
     }
     onExit() {
         R.remove(this.background);
+
+        this.cabinetUI.onRemove()
+        R.remove(this.cabinetUI)
+
         for(let i = 0; i < 4; i++){
             R.remove(this.allFileCabinets[i])
         }
