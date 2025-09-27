@@ -9,6 +9,7 @@ let fcView, otherView, v1, v2, v3, v4, room;
 // Assets
 let backgroundFC;
 let gameFont;
+let terminusFont;
 
 function fit16x9() {
   const k = Math.min(windowWidth / 16, windowHeight / 9);
@@ -31,6 +32,7 @@ function preload() {
   loadSprites();
 
   gameFont     = loadFont('assets/font/PressStart2P-Regular.ttf');
+  terminusFont = loadFont('assets/font/terminus.ttf');
   backgroundFC = loadImage('assets/background/EastWallNoFC&Paper.png');
 }
 

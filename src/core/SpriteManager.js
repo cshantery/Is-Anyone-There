@@ -2,7 +2,7 @@ let fileCabinet;
 
 function loadSprites() {
     SM.add("FileCabinet", loadImage('assets/testObjects/filecabinet.png'));
-    SM.add("NorthWall", loadImage('assets/testObjects/NorthWall.png')); 
+    SM.add("NorthWall", loadImage('assets/demoRoom/PCWall.webp')); 
     SM.add("pinpad", loadImage('assets/testObjects/pinpad.png'));
     SM.add("SouthWall", loadImage('assets/SouthWall.png'))
 
@@ -12,6 +12,7 @@ function loadSprites() {
     SM.add("FileCabinet4", loadImage('assets/testObjects/filecabinet.png'));
 
     SM.add("secondNumber", loadImage('assets/object/secondNumber.png'));
+    SM.add("screen", loadImage('assets/object/screen.webp'));
 }
 
 class SpriteManager {
