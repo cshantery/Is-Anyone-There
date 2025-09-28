@@ -114,3 +114,43 @@ class MoveView extends View {
     R.remove(this.block4);
   }
 }
+
+class BillboardView extends View {
+  constructor() {
+    super(0, 0, 0, '');
+    this.background = SM.get("SouthWall");
+    this.background.setSize(16, 9);
+  }
+
+  update(dt) {}
+
+  draw() {}
+
+  onEnter() {
+    R.add(this.background);
+  }
+
+  onExit() {
+    R.remove(this.background);
+  }
+}
+
+class BoxesView extends View {
+  constructor() {
+    super(0, 0, 0, '');
+    this.background = SM.get("EastWall");
+    this.background.setSize(16, 9);
+  }
+
+  update(dt) {}
+
+  draw() {}
+
+  onEnter() {
+    R.add(this.background);
+  }
+
+  onExit() {
+    R.remove(this.background);
+  }
+}

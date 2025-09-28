@@ -2,16 +2,19 @@ let cnv;
 let R;
 let SM = new SpriteManager(); // Sprite Manager
 
+// Interface state tracking
+let activeInterface = null; // tracks if Terminal, Pinpad, or other interface is active
+
 // Views and game elements
 let startScreen;
-let fcView, otherView, v1, v2, v3, v4, room;
+let room;
 
 // Assets
-let backgroundFC;
-let preloadedAsset;
 let gameFont;
 let terminusFont;
 let startScreenMusic;
+let henryAudio;
+let henryImage;
 
 function fit16x9() {
   const k = Math.min(windowWidth / 16, windowHeight / 9);
@@ -35,10 +38,13 @@ function preload() {
 
   gameFont     = loadFont('assets/font/PressStart2P-Regular.ttf');
   terminusFont = loadFont('assets/font/terminus.ttf');
-  backgroundFC = loadImage('assets/background/EastWallNoFC&Paper.png');
 
   // Load start screen music
   startScreenMusic = loadSound('assets/Is_Anybody_There.mp3');
+  
+  // Load henry password sequence assets
+  henryAudio = loadSound('assets/secrets/henry/connectionTerminated.mp3');
+  henryImage = loadImage('assets/secrets/henry/connectionTerminated.jpg');
 }
 
 function setup() {
@@ -56,7 +62,7 @@ function setup() {
 
     // Switch to game views
     textFont('sans-serif');
-    setupRoom(preloadedAsset);
+    setupRoom();
   });
 
   // High z so it draws on top until removed
@@ -85,44 +91,30 @@ function mousePressed() {
   const m = VM.mouse();
   if (!VM.insideUnits(m)) return;
   // console.log(m.x, m.y);
-  R.dispatch('mousePressed', m);
+  if (R) R.dispatch('mousePressed', m);
 }
 
 function mouseReleased() {
-  R.dispatch('mouseReleased');
+  if (R) R.dispatch('mouseReleased');
 }
 
 function keyPressed() {
-  R.dispatch('keyPressed');
+  if (R) R.dispatch('keyPressed');
 }
 
-function setupRoom(temp) {
-  fcView    = new FileCabinetView(backgroundFC, temp);
-  otherView = new View(238, 130, 238, 'Some other orientation...');
-
-  /* example usage of door with another bg 
-  const westWall = SM.get("WestWall");
-  otherView = new SlidingDoorView([
-    { x: 9, y: 5, scale: 0.9 }
-  ], westWall); */ 
-
-  v1 = new ComputerView();
-  v2 = new TimerView();
-  v3 = new MoveView();
-  v4 = new SlidingDoorView([
-    { x: 6.5, y: 1.75, scale: 0.8 }
-  ]);
+function setupRoom() {
+  // Create the view instances
+  let computerView = new ComputerView();        // North wall (pcWall.webp) - starting view
+  let boxesView = new BoxesView();              // East wall (boxesWall.webp) - right from start
+  let billboardView = new BillboardView();      // South wall (billBoardWall.webp) - left from start  
+  let fcView = new FileCabinetView();           // West wall (cabinetWall.webp) - behind start
 
   room = new ViewManager();
-  room.addView(v1);
-  room.addView(v2);
-  room.addView(v3);
-  room.addView(fcView);
-  room.addView(v4);
-  room.addView(otherView);
-
-
+  // Add views in navigation order: North -> East -> South -> West
+  room.addView(computerView);    // 0: North (start here) - pcWall
+  room.addView(boxesView);       // 1: East (right arrow) - boxesWall  
+  room.addView(billboardView);   // 2: South (continue right) - billBoardWall
+  room.addView(fcView);          // 3: West (continue right, left from start) - cabinetWall
 
   R.add(room);
-
 }

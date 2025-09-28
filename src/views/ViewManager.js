@@ -40,6 +40,11 @@ class ViewManager {
   }
 
   keyPressed() {
+    // Don't handle arrow keys if an interface is active
+    if (window.activeInterface) {
+      return;
+    }
+
     const current = this.Views[this._currentView];
     if (keyCode === LEFT_ARROW) {
       R.remove(current);

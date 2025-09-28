@@ -5,10 +5,14 @@ class Terminal {
     this.history = [];
     this.maxLines = 8;    // how many lines to show in the modal
 
+    // Mark interface as active
+    window.activeInterface = 'Terminal';
+
     this._closeBtn = new Button(13.3, 1.1, 0.6, (self) => {
       R.selfRemove(self);
       R.remove(this);
-      onExit();
+      window.activeInterface = null; // Clear active interface flag
+      this.onExit();
     });
     R.add(this._closeBtn, 11);
   }
@@ -83,9 +87,38 @@ class Terminal {
   update(dt) {}
 
   keyPressed() {
+    // Arrow keys exit the terminal
+    if (keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {
+      R.selfRemove(this._closeBtn);
+      R.remove(this);
+      window.activeInterface = null; // Clear active interface flag
+      this.onExit();
+      return;
+    }
+
     // Submit
     if (keyCode === ENTER || keyCode === RETURN) {
-      this.history.push(this.input);
+      //check if it starts with * and look through the list of passwords to see if it matches, case sensitive. if it does, run that command. else, check it for the list of regular commands, and if it matches, run it.
+      // Check if it's a password command before adding to history
+      if (this.input.startsWith('*')) {
+        // Try to check password
+        if (typeof checkPassword === 'function' && checkPassword(this.input)) {
+          // Password was correct, close terminal and execute sequence
+          R.selfRemove(this._closeBtn);
+          R.remove(this);
+          window.activeInterface = null;
+          this.onExit();
+          return;
+        } else {
+          // Invalid password, show error
+          this.history.push(this.input);
+          this.history.push("Invalid password");
+        }
+      } else {
+        // Regular command, just add to history for now
+        this.history.push(this.input);
+      }
+      
       // keep history bounded
       if (this.history.length > 200) this.history.shift();
       this.input = "";
@@ -121,7 +154,7 @@ class PinButton extends Button {
     }
 
     draw() {
-        super.draw();
+        //super.draw();
         const u = VM.u();
         const v = VM.v();
         
@@ -129,6 +162,7 @@ class PinButton extends Button {
         noStroke();
         fill(0);
         textAlign(CENTER, CENTER);
+        textFont(terminusFont);
         textSize(this.size * 0.6 * v);
         const cx = (this.x + this.size / 2) * u;
         const cy = (this.y + this.size / 2) * v;
@@ -146,16 +180,24 @@ class Pinpad {
         this.isProcessing = false;
         this.feedbackColor = null; // null, 'green', or 'red'
         
-        R.add(new Button(10, 1.4, 0.6, (self) => {
-            R.selfRemove(self)
-            R.remove(this);
-            onExit();
+        // Mark interface as active
+        window.activeInterface = 'Pinpad';
+        
+        this._exitBtn = new Button(11.2, 1.4, 0.6, (self) => {
+            // Clean up pinpad interface first
+            R.selfRemove(self);
             this.pinButtons.forEach((obj) => {
                 R.remove(obj);
-            })
-        }));
+            });
+            R.remove(this);
+            
+            // Clear active interface flag and call onExit callback
+            window.activeInterface = null;
+            this.onExit();
+        });
+        R.add(this._exitBtn, 15); // Higher z-index to render on top
 
-this.pinButtons = [];
+        this.pinButtons = [];
 
         // digits 1–9
         for (let i = 0; i < 9; ++i) {
@@ -213,7 +255,8 @@ this.pinButtons = [];
         
         textAlign(LEFT);
         textSize(1 * v);
-        text(this.label, 6.3 * u, 2.8 * v);
+        textFont(terminusFont);
+        text(this.label, 5.8 * u, 2.1 * v);
 
         pop();
     }
@@ -223,6 +266,21 @@ this.pinButtons = [];
     }
 
     keyPressed() {
+        // Arrow keys exit the pinpad
+        if (keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {
+            // Clean up pinpad interface first
+            R.selfRemove(this._exitBtn);
+            this.pinButtons.forEach((obj) => {
+                R.remove(obj);
+            });
+            R.remove(this);
+            
+            // Clear active interface flag and call onExit callback
+            window.activeInterface = null;
+            this.onExit();
+            return;
+        }
+
         if (this.isProcessing) return; // Prevent input during processing
         
         if (keyCode === BACKSPACE) {
@@ -260,25 +318,40 @@ class ComputerView extends View {
         this.terminalHighlight = new HighlightEvent(
             2.33, 0.25, 10.1, 6.6, 255, 255, 0,
             (self) => {
+                // Don't open terminal if another interface is active
+                if (window.activeInterface) {
+                    return;
+                }
+                
                 R.selfRemove(self);
                 R.remove(this.pinpadHighlight);
                 R.add(new Terminal(() => {
-                    // re-enable highlights when terminal closes
-                    R.add(this.terminalHighlight);
-                    R.add(this.pinpadHighlight);
+                    // Add a small delay before re-enabling highlights to prevent immediate re-triggering
+                    setTimeout(() => {
+                        R.add(this.terminalHighlight);
+                        R.add(this.pinpadHighlight);
+                    }, 100);
                 }));
             }
         );
 
 
         this.pinpadHighlight = new HighlightEvent(12.5, 6, 1.3, 1.85, 255, 255, 0, (self) => {
+            // Don't open pinpad if another interface is active
+            if (window.activeInterface) {
+                return;
+            }
+            
             console.log("Pinpad");
             R.selfRemove(self);
             R.remove(this.terminalHighlight);
 
             R.add(new Pinpad(() => {
-                R.add(this.terminalHighlight);
-                R.add(this.pinpadHighlight);
+                // Add a small delay before re-enabling highlights to prevent immediate re-triggering
+                setTimeout(() => {
+                    R.add(this.terminalHighlight);
+                    R.add(this.pinpadHighlight);
+                }, 100);
             }));
             
         });

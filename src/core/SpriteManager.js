@@ -1,11 +1,12 @@
 let fileCabinet;
 
 function loadSprites() {
-    SM.add("FileCabinet", loadImage('assets/testObjects/filecabinet.png'));
-    SM.add("NorthWall", loadImage('assets/demoRoom/PCWall.webp')); 
+    SM.add("FileCabinet", loadImage('assets/object/fileCabinet.webp'));
+    SM.add("NorthWall", loadImage('assets/background/pcWall.webp')); 
+    SM.add("EastWall", loadImage('assets/background/boxesWall.webp')); 
+    SM.add("SouthWall", loadImage('assets/background/billBoardWall.webp'));
+    SM.add("WestWall", loadImage('assets/background/cabinetWall.webp'));
     SM.add("pinpad", loadImage('assets/object/keypad.webp'));
-    SM.add("SouthWall", loadImage('assets/SouthWall.png'))
-    SM.add("WestWall", loadImage('assets/background/cabinetWall.webp'))
 
     SM.add("FileCabinet1", loadImage('assets/object/fileCabinet.webp'));
     SM.add("FileCabinet2", loadImage('assets/object/fileCabinet.webp'));
@@ -19,7 +20,10 @@ function loadSprites() {
     SM.add("SlidingDoor2", loadImage('assets/object/SlidingDoor2.svg'));
     SM.add("SlidingDoor3", loadImage('assets/object/SlidingDoor3.svg'));
     SM.add("SlidingDoor4", loadImage('assets/object/SlidingDoor4.svg'));
+    SM.add("connectionTerminated", loadImage('assets/secrets/henry/connectionTerminated.jpg'));
 }
+
+
 
 class SpriteManager {
     constructor() {
