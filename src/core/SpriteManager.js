@@ -3,14 +3,14 @@ let fileCabinet;
 function loadSprites() {
     SM.add("FileCabinet", loadImage('assets/testObjects/filecabinet.png'));
     SM.add("NorthWall", loadImage('assets/demoRoom/PCWall.webp')); 
-    SM.add("pinpad", loadImage('assets/testObjects/pinpad.png'));
+    SM.add("pinpad", loadImage('assets/object/keypad.webp'));
     SM.add("SouthWall", loadImage('assets/SouthWall.png'))
-    SM.add("WestWall", loadImage('assets/WestWall.png'))
+    SM.add("WestWall", loadImage('assets/background/cabinetWall.webp'))
 
-    SM.add("FileCabinet1", loadImage('assets/testObjects/filecabinet.png'));
-    SM.add("FileCabinet2", loadImage('assets/testObjects/filecabinet.png'));
-    SM.add("FileCabinet3", loadImage('assets/testObjects/filecabinet.png'));
-    SM.add("FileCabinet4", loadImage('assets/testObjects/filecabinet.png'));
+    SM.add("FileCabinet1", loadImage('assets/object/fileCabinet.webp'));
+    SM.add("FileCabinet2", loadImage('assets/object/fileCabinet.webp'));
+    SM.add("FileCabinet3", loadImage('assets/object/fileCabinet.webp'));
+    SM.add("FileCabinet4", loadImage('assets/object/fileCabinet.webp'));
 
     SM.add("secondNumber", loadImage('assets/object/secondNumber.png'));
     SM.add("screen", loadImage('assets/object/screen.webp'));

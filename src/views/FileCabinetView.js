@@ -16,7 +16,7 @@ class FileCabinet {
         this.background = SM.get(img);
         this.background.setPos(this.x, this.y);
         this.background.setScale(this.scale);
-        this.width = 1.85
+        this.width = 2.55
         this.height = 3
 
         this.onClick = onClick;
@@ -49,6 +49,8 @@ class FileCabinet {
         }
     }
 }
+
+//639 x 763 == 2.55 x 3
 
 class OpenCabinetUI {
   constructor(onExit = () => {}) {

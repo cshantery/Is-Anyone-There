@@ -142,7 +142,9 @@ class Pinpad {
         this.code = [];
         this.onExit = onExit;
         this.label = "";
-        this.pass = '765'
+        this.pass = '749'; // based on RGB pattern of clues
+        this.isProcessing = false;
+        this.feedbackColor = null; // null, 'green', or 'red'
         
         R.add(new Button(10, 1.4, 0.6, (self) => {
             R.selfRemove(self)
@@ -162,15 +164,23 @@ this.pinButtons = [];
             const val = i + 1;
 
             const btn = new PinButton(
-                6.3 + col * 1.25, 
-                3.6 + row, 
+                5.85 + col * 1.75, 
+                3.4 + row * 1.5, 
                 0.9, 
                 val,
                 () => {
+                    if (this.isProcessing) return; // Prevent spamming
                     this.label += val;
                     if (this.label.length === 3) {
-                        console.log(this.label === this.pass ? "Correct Pin!" : "Incorrect Pin!");
-                        this.label = '';
+                        this.isProcessing = true;
+                        const isCorrect = this.label === this.pass;
+                        this.feedbackColor = isCorrect ? 'green' : 'red';
+                        console.log(isCorrect ? "Correct Pin!" : "Incorrect Pin!");
+                        setTimeout(() => {
+                            this.label = '';
+                            this.feedbackColor = null;
+                            this.isProcessing = false;
+                        }, 500);
                     }
                 }
             );
@@ -179,25 +189,6 @@ this.pinButtons = [];
             R.add(btn, 10);
         }
 
-        // digit 0
-        const zeroBtn = new PinButton(
-            6.3 + 1 * 1.25,    
-            3.6 + 3,           
-            0.9,
-            0,
-            () => {
-                this.label += '0';
-                if (this.label.length === 3) {
-                    console.log(this.label === this.pass ? "Correct Pin!" : "Incorrect Pin!");
-                    this.label = '';
-                }
-            }
-        );
-
-        this.pinButtons.push(zeroBtn);
-        R.add(zeroBtn, 10);
-
-
     }
 
     draw() {
@@ -205,12 +196,21 @@ this.pinButtons = [];
         const v = VM.v();
 
         push();
-        fill(255, 255, 255);
-        rect(6 * u, 2 * v, 4 * u, 6 * v, 8);
-        fill(0, 0, 0);
-        rect(6.2 * u, 2.2 * v, 3.6 * u, 1.2 * v, 8);
+        let pinPadBig = SM.get("pinpad");
+        if (pinPadBig && pinPadBig.src) {
+            image(pinPadBig.src, 5 * u, 1.4 * v, 6 * u, 7 * v);
+        } else {
+        }
         
-        fill(255, 255, 255);
+        // Set text color based on feedback
+        if (this.feedbackColor === 'green') {
+            fill(0, 255, 0); // Green for correct
+        } else if (this.feedbackColor === 'red') {
+            fill(255, 0, 0); // Red for incorrect
+        } else {
+            fill(255, 255, 255); // White for normal
+        }
+        
         textAlign(LEFT);
         textSize(1 * v);
         text(this.label, 6.3 * u, 2.8 * v);
@@ -223,14 +223,22 @@ this.pinButtons = [];
     }
 
     keyPressed() {
+        if (this.isProcessing) return; // Prevent input during processing
+        
         if (keyCode === BACKSPACE) {
             this.label = this.label.slice(0, -1);
         } else if (this.label.length < 3 && /^[0-9]$/.test(key)) {
             this.label += key;
             if (this.label.length === 3) {
-                console.log(this.label === this.pass ? "Correct Pin!" : "Incorrect Pin!");
-
-                this.label = '';
+                this.isProcessing = true;
+                const isCorrect = this.label === this.pass;
+                this.feedbackColor = isCorrect ? 'green' : 'red';
+                console.log(isCorrect ? "Correct Pin!" : "Incorrect Pin!");
+                setTimeout(() => {
+                    this.label = '';
+                    this.feedbackColor = null;
+                    this.isProcessing = false;
+                }, 500);
             }
         }
     }
@@ -263,7 +271,7 @@ class ComputerView extends View {
         );
 
 
-        this.pinpadHighlight = new HighlightEvent(12.5, 6, 1.3, 1.45, 255, 255, 0, (self) => {
+        this.pinpadHighlight = new HighlightEvent(12.5, 6, 1.3, 1.85, 255, 255, 0, (self) => {
             console.log("Pinpad");
             R.selfRemove(self);
             R.remove(this.terminalHighlight);
@@ -286,7 +294,8 @@ class ComputerView extends View {
     onExit() {
         R.remove(this.background);
         R.remove(this.pinpad);
-        R.remove(this.terminalHighlight)
+        this.pinpad.label = ''; // reset pinpad input on exit
+        R.remove(this.terminalHighlight);
         R.remove(this.pinpadHighlight);
     }
 }
