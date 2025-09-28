@@ -17,36 +17,64 @@ class Terminal {
     const u = VM.u(), v = VM.v();
 
     push();
-    fill(0);
-    stroke(255);
-    strokeWeight(2);
-    rect(2 * u, 1 * v, 12 * u, 7 * v, 10);
+    // Draw the terminal background using the screen.webp image
+    let screenSprite = SM.get("screen");
+    if (screenSprite && screenSprite.src) {
+        image(screenSprite.src, 2 * u, 1 * v, 12 * u, 7 * v);
+    } else {
+        // fallback: draw a black background if image not loaded
+        fill(0); // Black background
+        stroke(128); // Gray border instead of green
+        strokeWeight(2);
+        rect(2 * u, 1 * v, 12 * u, 7 * v, 10);
+    }
 
+    // Terminal header bar
     noStroke();
-    fill(30);
+    fill(60); // Slightly lighter gray for header
     rect(2 * u, 1 * v, 12 * u, 0.8 * v, 10);
-    fill(255);
+    
+    // Terminal header text with green glow
+    fill(0, 255, 0, 150); // Bright green with transparency for glow effect
     textAlign(LEFT, CENTER);
     textSize(0.45 * v);
+    // Draw text multiple times for glow effect
+    textFont(terminusFont);
+    text("Terminal", (2.3) * u + 1, (1.4) * v + 1); // Offset for glow
+    fill(0, 255, 0); // Bright green
     text("Terminal", (2.3) * u, (1.4) * v);
 
     const left = 2.3 * u;
     const top = (1.9) * v;
     const lh = 0.6 * v;
 
+    // Add scan lines effect
+    stroke(0, 0, 0, 30);
+    strokeWeight(1);
+    for (let i = 0; i < 7 * v; i += 4) {
+        line(2 * u, (1 * v) + i, 14 * u, (1 * v) + i);
+    }
+    noStroke();
+
     const start = Math.max(0, this.history.length - this.maxLines);
     let y = top;
     textAlign(LEFT, TOP);
-    textSize(0.5 * v);
-    fill(230);
+    textSize(0.4 * v); // Slightly smaller for retro look
 
     for (let i = start; i < this.history.length; i++) {
-      text("> " + this.history[i], left, y);
-      y += lh;
+        // Draw text with glow effect
+        fill(0, 255, 0, 100); // Glow
+        text("> " + this.history[i], left + 1, y + 1);
+        fill(0, 255, 0); // Main text
+        text("> " + this.history[i], left, y);
+        y += lh;
     }
 
-    // Blinking Cursor
+    // Blinking Cursor with glow
     const cursor = frameCount % 60 < 30 ? "_" : " ";
+    fill(0, 255, 0, 100); // Glow
+    text("> " + this.input + cursor, left + 1, y + 1);
+    fill(0, 255, 0); // Main text
     text("> " + this.input + cursor, left, y);
 
     pop();

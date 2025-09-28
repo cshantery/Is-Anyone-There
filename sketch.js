@@ -8,7 +8,10 @@ let fcView, otherView, v1, v2, v3, v4, room;
 
 // Assets
 let backgroundFC;
+let preloadedAsset;
 let gameFont;
+let terminusFont;
+let startScreenMusic;
 
 function fit16x9() {
   const k = Math.min(windowWidth / 16, windowHeight / 9);
@@ -31,7 +34,11 @@ function preload() {
   loadSprites();
 
   gameFont     = loadFont('assets/font/PressStart2P-Regular.ttf');
+  terminusFont = loadFont('assets/font/terminus.ttf');
   backgroundFC = loadImage('assets/background/EastWallNoFC&Paper.png');
+
+  // Load start screen music
+  startScreenMusic = loadSound('assets/Is_Anybody_There.mp3');
 }
 
 function setup() {
@@ -41,11 +48,15 @@ function setup() {
   R = new Renderer();
 
   startScreen = new StartScreenView(() => {
+    // Stop music when starting game
+    if (startScreenMusic && startScreenMusic.isPlaying()) {
+      startScreenMusic.stop();
+    }
     R.selfRemove(startScreen);
 
     // Switch to game views
     textFont('sans-serif');
-    setupRoom();
+    setupRoom(preloadedAsset);
   });
 
   // High z so it draws on top until removed
@@ -85,17 +96,33 @@ function keyPressed() {
   R.dispatch('keyPressed');
 }
 
-function setupRoom() {
-  fcView    = new FileCabinetView();
+function setupRoom(temp) {
+  fcView    = new FileCabinetView(backgroundFC, temp);
+  otherView = new View(238, 130, 238, 'Some other orientation...');
+
+  /* example usage of door with another bg 
+  const westWall = SM.get("WestWall");
+  otherView = new SlidingDoorView([
+    { x: 9, y: 5, scale: 0.9 }
+  ], westWall); */ 
+
   v1 = new ComputerView();
   v2 = new TimerView();
   v3 = new MoveView();
+  v4 = new SlidingDoorView([
+    { x: 6.5, y: 1.75, scale: 0.8 }
+  ]);
 
   room = new ViewManager();
   room.addView(v1);
   room.addView(v2);
   room.addView(v3);
   room.addView(fcView);
+  room.addView(v4);
+  room.addView(otherView);
+
+
 
   R.add(room);
+
 }
