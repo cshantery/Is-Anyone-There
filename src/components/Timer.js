@@ -44,11 +44,11 @@ class ScreenTimer {
 
     draw() {
         push();
-        textSize(48);
+        textSize(18);
         textAlign(CENTER, CENTER);
         textStyle(BOLD);
 
-        let pad = 20;
+        let pad = 10;
         let tw = textWidth(this.label) + pad * 2;
         let th = textAscent() + textDescent() + pad * 2;
 
@@ -58,7 +58,7 @@ class ScreenTimer {
         rectMode(CORNER);
         fill(0);
         stroke(150);
-        strokeWeight(3);
+        strokeWeight(2);
         rect(x, y, tw, th, 8);
 
         noStroke();

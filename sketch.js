@@ -15,6 +15,7 @@ let terminusFont;
 let startScreenMusic;
 let henryAudio;
 let henryImage;
+let screenTimer;
 
 function fit16x9() {
   const k = Math.min(windowWidth / 16, windowHeight / 9);
@@ -60,6 +61,10 @@ function setup() {
     }
     R.selfRemove(startScreen);
 
+    screenTimer = new ScreenTimer(() => {
+
+    });
+    R.add(screenTimer, 1);
     // Switch to game views
     textFont('sans-serif');
     setupRoom();
