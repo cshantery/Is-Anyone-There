@@ -25,7 +25,7 @@ class DisplayText{
         // --- temporary bit for visibility - NOT PART OF ACTUAL DISPLAYTEXT CLASS
         let w = textWidth(this.content);
         let h = textAscent() + textDescent();
-        fill(0, 204, 102, 50)
+        fill(122, 122, 102, 50)
         rect(this.x*u-10, this.y*v-10, w+20, h+20, 8)
 
         // ---
@@ -34,9 +34,11 @@ class DisplayText{
         pop()
     }
 
-    // getters
+    // setters and getters
     setAlpha(alpha){ this.alpha = alpha }
     getAlpha(){ return this.alpha }
+    setY(newY){ this.y = newY}
+    getY(){ return this.y}
 }
 
 class TextNotificationHandler {
@@ -60,34 +62,29 @@ class TextNotificationHandler {
         this.z_index = zind;
         this.fadeoutRate = fadeoutRate
 
-        this.size = 26; // just have it as constant so it's uniform across all views
+        this.size = 20; // just have it as constant so it's uniform across all views
         this.alphaCutoff = 5; // remove text notif when alpha less than this value
 
-        this.text = null
-        this.timer = 0
-        this.fadeoutLocket = true
-        this.holdFadeout = true;
+        this.holdFadeoutFor = 1; // how many seconds to hold fadeout for
+
+        // each element is an array where index: 0 is the text object, 1 is the timer for that object's fading mechanics
+        // will look something like [[textObject1, 0.3],[textObject2, 0.93],[textObject3, 3.1],...]
+        this.textContainer = []
     }
 
     update(dt){
-        if(this.text != null){ // only start updates and timers if the text has been set 
+        // NOTE: if game starts lagging with text notifications this may be the culprit...
+        for(let i = 0; i < this.textContainer.length; i++){
+            this.textContainer[i][1] += dt
+            const textObj = this.textContainer[i][0]
 
-            // holds the fadeout effect for 1 second
-            if(this.holdFadeout){
-                this.timer += dt
+            /* Fadeout logic, expoentially decay alpha value for text. If alpha gets too low ( < this.alphaCutoff)), make text disappear (looks smoother this way) */
+            if(this.textContainer[i][1] > this.holdFadeoutFor){
+                textObj.setAlpha(textObj.getAlpha()*(1-this.fadeoutRate)) // new_alpha = old_alpha * (1-fadeout_rate)
 
-                if(this.timer > 1){
-                    this.holdFadeout = false
-                }
-            }
-            
-            /* Fadeout logic, expoentially decay alpha value for text. If alpha gets too low (30 for now), make text disappear (looks smoother this way) */
-            if(!this.holdFadeout){
-                this.text.setAlpha(this.text.getAlpha()*(1-this.fadeoutRate)) // new_alpha = old_alpha * (1-fadeout_rate)
-
-                if(this.text.getAlpha() < this.alphaCutoff){
-                    this.cleanup()
-                    this.holdFadeout = true
+                if(textObj.getAlpha() < this.alphaCutoff){
+                    R.remove(textObj)
+                    this.textContainer.splice(i, 1) // delete from array
                 }
             }
         }
@@ -95,24 +92,26 @@ class TextNotificationHandler {
 
     // add text at position specified at constructor
     addText(text){
-        if(this.text == null){
-            this.text = new DisplayText(this.x, this.y, text, this.size)
-            R.add(this.text, this.zind)
+        let textCount = this.textContainer.length
+
+        // push others down
+        for(let i = 0; i < textCount; i++){
+            const textObj = this.textContainer[i][0]
+            textObj.setY(this.y+(i+1)*0.6) // fixed offset for now. change later
         }
-        /* If we tried to addText again (so if a user clicks what caused the notification), then it will reset timers so the notification
-        stays for a bit longer.
-         */
-        else{
-            this.timer = 0
-            this.holdFadeout = true
-            this.text.setAlpha(255)
-        }
+
+        // add to front at top
+        this.textContainer.unshift([new DisplayText(this.x, this.y, text, this.size), 0])
+        R.add(this.textContainer[0][0], this.zind)
+
     }
 
     // call this in onExit in your view.
     cleanup(){
-        R.remove(this.text)
-        this.text = null
+        for(let i = 0; i < this.textContainer.length; i++){
+            R.remove(this.textContainer[0][i])
+        }
+        this.textContainer = [] // wipe array
     }
 
 }

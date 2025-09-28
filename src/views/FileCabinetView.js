@@ -120,6 +120,7 @@ class FileCabinetView extends View {
 
                 if(obj.id == this.secretId){
                     console.log('this is the secret cabinet.')
+                    this.textNotificationHandler.addText('You opened a mysterious file cabinet.')
                     this.cabinetUI.onAdd()
                     R.add(this.cabinetUI, 10)
                 }else{
