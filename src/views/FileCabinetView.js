@@ -16,8 +16,8 @@ class FileCabinet {
         this.background = SM.get(img);
         this.background.setPos(this.x, this.y);
         this.background.setScale(this.scale);
-        this.width = 2.55
-        this.height = 3
+        this.width = 1.93
+        this.height = 2.3
 
         this.onClick = onClick;
         this.highlight = new HighlightEvent(this.x, this.y, this.width, this.height);
@@ -112,10 +112,10 @@ class FileCabinetView extends View {
         
         this.cabinetUI = new OpenCabinetUI();
 
-        this.scale = 0.4
+        this.scale = 0.3
         this.allFileCabinets = [];
         for(let i = 0; i < 4; i++){
-            this.allFileCabinets.push(new FileCabinet(i, 1+4*i, 5.5, this.scale, `FileCabinet${i+1}`, (obj) => {
+            this.allFileCabinets.push(new FileCabinet(i, 1.5+3*i, 5.7, this.scale, `FileCabinet${i+1}`, (obj) => {
                 console.log(`File Cabinet ${i} Clicked`)
 
                 if(obj.id == this.secretId){
