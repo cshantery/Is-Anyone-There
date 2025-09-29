@@ -62,3 +62,30 @@ class ViewManager {
     }
   }
 }
+
+class GameState {
+  constructor() {
+    this.timerUp = false;
+    this.solved = false;
+  }
+
+  TimerDone() {
+    this.timerUp = true;
+  }
+
+  getTimer() {
+    return this.timerUp;
+  }
+
+  Solved() {
+    this.solved = true;
+  }
+
+  getSolved() {
+    return this.solved;
+  }
+
+  isEnded() {
+    return this.solved || this.timerUp;
+  }
+}

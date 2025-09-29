@@ -24,7 +24,7 @@ class Timer {
 
 class ScreenTimer {
     constructor(onEnd = () => {}) {
-        this.timer = new Timer(300000);   
+        this.timer = new Timer(120000);   
         this.label = '';
         this.onEnd = onEnd;
     }
@@ -37,8 +37,11 @@ class ScreenTimer {
             let s = secs % 60;
             this.label = `${m}:${nf(s, 2)}`;
         } else {
-            this.label = '0:00';
-            this.onEnd();
+            setTimeout(() => {
+                this.label = '0:00';
+                GS.TimerDone();
+                this.onEnd();
+            }, 500);
         }
     }
 

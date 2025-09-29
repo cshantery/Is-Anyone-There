@@ -1,6 +1,9 @@
 let cnv;
 let R;
 let SM = new SpriteManager(); // Sprite Manager
+let GS = new GameState();
+
+let ended = false;
 
 // Interface state tracking
 let activeInterface = null; // tracks if Terminal, Pinpad, or other interface is active
@@ -82,6 +85,14 @@ function draw() {
   background(20);
 
   const dt = deltaTime / 1000;
+  if(!ended) {
+    endScreen = new EndScreenView(GS.getSolved()); //update endscreen state
+  }
+
+  if(GS.getSolved() || GS.getTimer()) {
+    ended = true;
+    R.add(endScreen, 999);
+  }
   R.update(dt);
   R.draw();
 }

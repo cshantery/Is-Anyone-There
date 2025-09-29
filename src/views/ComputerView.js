@@ -222,6 +222,9 @@ class Pinpad {
                             this.label = '';
                             this.feedbackColor = null;
                             this.isProcessing = false;
+                            if(isCorrect) {
+                                GS.Solved();
+                            }
                         }, 500);
                     }
                 }
