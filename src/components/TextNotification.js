@@ -45,7 +45,7 @@ class TextNotificationHandler {
     /**
      * Class for handling fading notifications.
      * 
-     * For now, only handles a single text message (plan to maybe do multiple).
+     * Can handle any number of text notifications on screen, maintains timers to fade each indiviudally.
      * 
      * Also for now, the view that uses this class must call TextNotificationHandler.update(dt) in its update.
      * 

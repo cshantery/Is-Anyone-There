@@ -5,7 +5,8 @@
 - [Time/update based mechanics](#timeupdate-based-mechanics)
 - [Working with resize system](#working-with-u-and-v-in-resize)
 - [Creating new views](#creating-views)
-- [Sprites and Audio](#)
+- [Sprites and Audio](#sprites-and-audio)
+- [Adding Text Notifications](#adding-text-notifications-to-your-interactions)
 
 
 ## Adding things to Renderer
@@ -31,8 +32,27 @@
 ## Creating Views
 - Each view must be its own class, and it inherits from `View` (see `src/views/ViewManager.js`)
 - Your view's constructor must call View's constructor using `super(...)`
+- Views can also have `OnEnter` and `OnExit` methods
+    - These are called by the View Manager when entering and leaving a view.
+    - Use this to add objects to renderer and eventually clean up when moving to another view 
+    - See the NOTE under "Adding things to renderer" to avoid issues with z-index
+- 
 - <b>Placeholder/Generic/Test Objects</b>
     - TODO: add descriptions or link to what they are and which ones we have here
-- 
 
 ## Sprites and Audio
+- For Sprite loading, we currently have a global sprite manager under the name `SM`
+    - To preload a sprite, go into `src/core/SpriteManager.js`, and add your sprite using `SM.add(...)` under the `loadSprites` function
+    - You can access this in your views using `SM.get('my_sprite_name')`
+
+
+## Adding Text Notifications to your interactions
+- The comments in `src/components/TextNotification.js` do a pretty good job of explaining this, but:
+- To properly add a text notification to interactions for a view you must:
+    - Create a `TextNotificationHandler` instance inside the constructor for your view
+    - The view must implement a `update(dt)` function and call `TextNotificationHandler`'s `update(dt)` inside it (to update timers)
+    - Make sure to call `TextNotificationHandler`'s `cleanup` in the onExit of the view
+- Now you can send notifications to the screen by calling your handler's `add('texthere')` function 
+- NOTE:
+    - You can update the rate at which they fade in the handler's constructor
+    - If they are not showing up or appearing beneath your objects, adjust z-index (also in constructor, default=100)

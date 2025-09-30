@@ -50,8 +50,6 @@ class FileCabinet {
     }
 }
 
-//639 x 763 == 2.55 x 3
-
 class OpenCabinetUI {
   constructor(onExit = () => {}) {
     this.onExit = onExit;
@@ -132,6 +130,7 @@ class FileCabinetView extends View {
     }
 
     update(dt){
+        // pass time to fading logic for text notifications
         this.textNotificationHandler.update(dt)
     }
 
@@ -150,15 +149,20 @@ class FileCabinetView extends View {
             this.allFileCabinets[i].onEnter()
         }
     }
+
     onExit() {
         R.remove(this.background);
-
+        
+        // make sure we remove UI on view change
         this.cabinetUI.onRemove()
         R.remove(this.cabinetUI)
 
+        // remove all the cabinets too
         for(let i = 0; i < 4; i++){
             R.remove(this.allFileCabinets[i])
         }
+
+        // remove highlights and sprite for filecabinet objects
         for(let i = 0; i < 4; i++){
             this.allFileCabinets[i].onExit()
         }
