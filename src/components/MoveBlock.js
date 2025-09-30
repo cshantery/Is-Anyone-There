@@ -1,4 +1,11 @@
 class MoveBlock {
+  /** x and y are the initial positions,
+   * for now the size is just fixed to be a square.
+   * 
+   * movements work by defining a dragDx and dragDy (computed to difference in current position, to where
+   * mouse is moving to). dragDx and dragDy are used in update to move the actual position of block (this.x
+   * and this.y). And draw uses the new positions this.x and this.y to render the moved block.
+   */
   constructor(x, y, size) {
     this.x = x;
     this.y = y;
@@ -25,6 +32,8 @@ class MoveBlock {
     if (!this.drag) return;
 
     const m = VM.mouse();
+
+    // constatly update real coordinates of block
     this.x = m.x - this.dragDx;
     this.y = m.y - this.dragDy;
   }
@@ -42,6 +51,8 @@ class MoveBlock {
     if (this.isMouseInBounds(p?.x, p?.y)) {
       const m = VM.mouse();
       this.drag = true;
+
+      // change in positions on drag
       this.dragDx = m.x - this.x;
       this.dragDy = m.y - this.y;
     }

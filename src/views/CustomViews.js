@@ -1,4 +1,10 @@
-
+/**
+ * This file contains a bunch of views that are examples on how to do things, 
+ * they are NOT in the demos or the actual game (we were using them only for testing).
+ * 
+ * If you want to understand how views work, see FileCabinetView.js, ComputerView.js (both fully documented)
+ * and also DOCUMENTATION.md for explanations and common errors.
+ */
 
 class TimerView extends View {
   constructor() {

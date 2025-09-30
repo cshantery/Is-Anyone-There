@@ -1,4 +1,8 @@
 class Renderer {
+    /**
+     * Access this via the global R object in your views/objects. 
+     * For explanation and help see DOCUMENTATION.md in the root directory of the project.
+     */
     constructor() {
         // layers: map of layer index -> array of objects
         this.layers = new Map();

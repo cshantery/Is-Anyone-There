@@ -1,6 +1,11 @@
 let fileCabinet;
 
 function loadSprites() {
+    /**
+     * Preload your sprites as images in this function, to use them in your code, use global SM
+     * object's SM.get('name').
+     */
+
     SM.add("FileCabinet", loadImage('assets/object/fileCabinet.webp'));
     SM.add("NorthWall", loadImage('assets/background/pcWall.webp')); 
     SM.add("EastWall", loadImage('assets/background/boxesWall.webp')); 

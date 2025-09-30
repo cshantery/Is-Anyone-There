@@ -54,6 +54,7 @@ class OpenCabinetUI {
   constructor(onExit = () => {}) {
     this.onExit = onExit;
 
+    // close button removes itself and calls cleanup onRemove
     this._closeBtn = new Button(11.5, 2.4, 0.6, (self) => {
       R.selfRemove(self);
       R.remove(this);
