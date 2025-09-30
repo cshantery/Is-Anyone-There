@@ -7,11 +7,14 @@ const doorClickHeight = 6;
 const frameDuration = 0.1; 
 
 class SlidingDoor {
-    constructor(x, y, scale, onClick = () => {}) {
+    constructor(x, y, scale, onClick = () => {}, targetView = null) {
         this.x = x;
         this.y = y;
         this.scale = scale;
         this.onClick = onClick;
+        this.targetView = targetView; 
+        this.highlight = new HighlightEvent(this.x, this.y, doorWidth, doorHeight);
+
 
 
         // loading frames of sliding door
@@ -46,7 +49,14 @@ class SlidingDoor {
             !this.animating
         ) {
             this.toggle();
-            this.onClick(this);
+
+            if(this.targetView){
+                setTimeout(() => {
+                    room.Views = [this.targetView]; 
+                    room._currentView = 0; 
+                    room.gotoView(this.targetView);
+                }, 450); 
+            }
         }
     }
 
@@ -85,11 +95,15 @@ class SlidingDoor {
 
     onEnter() {
         R.add(this);
+        R.add(this.highlight);
+
 
     }
 
     onExit() {
         R.remove(this);
+        R.remove(this.highlight); 
+
     }
 }
 
@@ -108,7 +122,8 @@ class SlidingDoorView extends View {
             config.x,
             config.y, 
             config.scale, 
-            config.onClick ?? (() => {})
+            config.onClick ?? (() => {}),
+            config.targetView ?? null 
         ));
         }
 
@@ -124,6 +139,7 @@ class SlidingDoorView extends View {
     onEnter() {
         R.add(this); 
         this.door.forEach(door => door.onEnter());
+
     }
 
     onExit() {

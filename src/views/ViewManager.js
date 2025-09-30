@@ -61,6 +61,26 @@ class ViewManager {
       next.onEnter();
     }
   }
+
+  // allows you to go into a different room once you 
+  // go through a sliding door 
+  gotoView(viewInstance){
+    const current = this.Views[this._currentView];
+    R.remove(current); 
+    current.onExit() 
+
+    const index = this.Views.indexOf(viewInstance); 
+
+    if(index == -1){
+      console.warn("this view is not in viewmanager!");
+      return; 
+    }
+
+    this._currentView = index; 
+    const next = this.Views[this._currentView];
+    R.add(next); 
+    next.onEnter();
+  }
 }
 
 class GameState {
