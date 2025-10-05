@@ -101,17 +101,17 @@ class TextNotificationHandler {
         }
 
         // add to front at top
-        this.textContainer.unshift([new DisplayText(this.x, this.y, text, this.size), 0])
-        R.add(this.textContainer[0][0], this.zind)
+        this.textContainer.unshift([new DisplayText(this.x, this.y, text, this.size), 0]);
+        R.add(this.textContainer[0][0], this.z_index);
 
     }
 
     // call this in onExit in your view.
-    cleanup(){
-        for(let i = 0; i < this.textContainer.length; i++){
-            R.remove(this.textContainer[0][i])
+    cleanup() {
+        for (let i = 0; i < this.textContainer.length; i++) {
+            R.remove(this.textContainer[i][0]); // remove each stored DisplayText
         }
-        this.textContainer = [] // wipe array
+        this.textContainer = [];
     }
 
 }

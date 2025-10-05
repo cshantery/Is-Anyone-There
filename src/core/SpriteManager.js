@@ -58,12 +58,11 @@ class Sprite {
         const copy = new Sprite(this.src);
         copy.x = this.x;
         copy.y = this.y;
-        copy.scale = this.scale * 100; // convert back to original scale
-        if (this.customSize) {
-            copy.customSize = { ...this.customSize };
-        }
+        copy.scale = this.scale;       // keep normalized scale (0..1)
+        copy.customSize = this.customSize ? { ...this.customSize } : null;
         return copy;
     }
+
 
     setScale(scale) {
         this.scale = scale / 100;

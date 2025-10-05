@@ -32,56 +32,54 @@ class ViewManager {
   }
 
   addView(obj) {
-    if (this.Views.length === 0) {
-      R.add(obj);
-      obj.onEnter();
-    }
     this.Views.push(obj);
   }
 
+  onEnter() {
+    const v = this.Views[this._currentView];
+    if (v) { R.add(v); v.onEnter?.(); }
+  }
+
+  onExit() {
+    const v = this.Views[this._currentView];
+    if (v) { R.remove(v); v.onExit?.(); }
+  }
+
   keyPressed() {
-    // Don't handle arrow keys if an interface is active
-    if (window.activeInterface) {
-      return;
-    }
+    if (window.activeInterface) return;
 
     const current = this.Views[this._currentView];
     if (keyCode === LEFT_ARROW) {
-      R.remove(current);
-      current.onExit();
-      this._currentView--;
-      if (this._currentView < 0) this._currentView = this.Views.length - 1;
-      const next = R.add(this.Views[this._currentView]);
-      next.onEnter();
+      R.remove(current); current.onExit?.();
+      this._currentView = (this._currentView - 1 + this.Views.length) % this.Views.length;
+      const next = this.Views[this._currentView]; R.add(next); next.onEnter?.();
     } else if (keyCode === RIGHT_ARROW) {
-      R.remove(current);
-      current.onExit();
+      R.remove(current); current.onExit?.();
       this._currentView = (this._currentView + 1) % this.Views.length;
-      const next = R.add(this.Views[this._currentView]);
-      next.onEnter();
+      const next = this.Views[this._currentView]; R.add(next); next.onEnter?.();
     }
   }
 
-  // allows you to go into a different room once you 
-  // go through a sliding door 
   gotoView(viewInstance){
     const current = this.Views[this._currentView];
-    R.remove(current); 
-    current.onExit() 
+    R.remove(current); current.onExit?.();
 
-    const index = this.Views.indexOf(viewInstance); 
+    const index = this.Views.indexOf(viewInstance);
+    if(index === -1){ console.warn("this view is not in viewmanager!"); return; }
 
-    if(index == -1){
-      console.warn("this view is not in viewmanager!");
-      return; 
-    }
+    this._currentView = index;
+    const next = this.Views[this._currentView]; R.add(next); next.onEnter?.();
+  }
 
-    this._currentView = index; 
-    const next = this.Views[this._currentView];
-    R.add(next); 
-    next.onEnter();
+  gotoIndex(i) {
+    if (i < 0 || i >= this.Views.length) return;
+    const current = this.Views[this._currentView];
+    R.remove(current); current.onExit?.();
+    this._currentView = i;
+    const next = this.Views[this._currentView]; R.add(next); next.onEnter?.();
   }
 }
+
 
 class GameState {
   constructor() {

@@ -67,15 +67,21 @@ class Renderer {
 
     // used for capturing mousePresses or Keyboard Events
     dispatch(methodName, ...args) {
-        // top-down so higher layers get events first
-        for (const z of [...this.layers.keys()].sort((a,b)=>b-a)) {
+        for (const z of [...this.layers.keys()].sort((a, b) => b - a)) {
             for (const o of this.layers.get(z)) {
                 const fn = o[methodName];
-                if (typeof fn === "function") fn.apply(o, args);
+                if (typeof fn === "function") {
+                    const handled = fn.apply(o, args);
+                    if (handled) {            // stop once someone handled it
+                        this._deleteObjects();
+                        return;
+                    }
+                }
             }
         }
         this._deleteObjects();
     }
+
 
     // clears everything in the renderer
     clear() {

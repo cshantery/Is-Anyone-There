@@ -2,6 +2,7 @@ let cnv;
 let R;
 let SM = new SpriteManager(); // Sprite Manager
 let GS = new GameState();
+let WORLD;
 
 let ended = false;
 
@@ -58,20 +59,15 @@ function setup() {
   R = new Renderer();
 
   startScreen = new StartScreenView(() => {
-    // Stop music when starting game
-    if (startScreenMusic && startScreenMusic.isPlaying()) {
-      startScreenMusic.stop();
-    }
+    if (startScreenMusic && startScreenMusic.isPlaying()) startScreenMusic.stop();
     R.selfRemove(startScreen);
 
-    screenTimer = new ScreenTimer(() => {
-
-    });
+    screenTimer = new ScreenTimer(() => { });
     R.add(screenTimer, 1);
-    // Switch to game views
-    textFont('sans-serif');
-    setupRoom();
+
+    setupWorld(); // ⬅️ new
   });
+
 
   // High z so it draws on top until removed
   R.add(startScreen, 999);
@@ -118,26 +114,81 @@ function keyPressed() {
   if (R) R.dispatch('keyPressed');
 }
 
-function setupRoom() {
-  // Create the view instances
-  let computerView = new ComputerView();        // North wall (pcWall.webp) - starting view
-  let boxesView = new BoxesView();              // East wall (boxesWall.webp) - right from start
-  let billboardView = new BillboardView();      // South wall (billBoardWall.webp) - left from start  
-  let fcView = new FileCabinetView();           // West wall (cabinetWall.webp) - behind start
-  let sdView = new SlidingDoorView([{
-    x:12, 
-    y:2.5,
-    scale:0.8, 
-    targetView: fcView
-  }]); 
+function setupWorld() {
+  WORLD = new WorldManager();
 
-  room = new ViewManager();
-  // Add views in navigation order: North -> East -> South -> West
-  room.addView(computerView);    // 0: North (start here) - pcWall
-  room.addView(boxesView);       // 1: East (right arrow) - boxesWall  
-  room.addView(billboardView);   // 2: South (continue right) - billBoardWall
-  room.addView(fcView);          // 3: West (continue right, left from start) - cabinetWall
-  room.addView(sdView);
+  // --- Room A (start here) ---
+  const computerView = new ComputerView(); // start view (index 0)
+  const boxesView    = new BoxesView();
+  const billboard    = new BillboardView();
+  const fcView       = new FileCabinetView();
 
-  R.add(room);
+  // Door in Room A -> Room B (index 1), land on view 0
+  const sdViewA = new SlidingDoorView([{
+    x:12, y:2.5, scale:0.8,
+    targetRoom: 1,        // <-- ROOM B
+    targetViewIndex: 0    // land on first plain color view
+  }]);
+
+  const roomA = new ViewManager();
+  roomA.addView(computerView);  // index 0 (start)
+  roomA.addView(boxesView);
+  roomA.addView(billboard);
+  roomA.addView(fcView);
+  roomA.addView(sdViewA);
+  sdViewA.setRoom?.(roomA);
+
+  // --- Room B (plain colors + label) ---
+  class PlainView extends View { constructor(r,g,b,label){ super(r,g,b,label); } }
+
+  const redView   = new PlainView(200, 40, 40,   'Room B - RED');
+  const greenView = new PlainView(40, 160, 60,   'Room B - GREEN');
+  const blueView  = new PlainView(50, 90, 200,   'Room B - BLUE');
+  const grayView  = new PlainView(60, 60, 60,    'Room B - GRAY');
+
+  // Door in Room B -> back to Room A (index 0), land on computerView (view 0)
+  const sdViewB = new SlidingDoorView([{
+    x:12, y:2.5, scale:0.8,
+    targetRoom: 0,        // <-- back to ROOM A
+    targetViewIndex: 0
+  }]);
+
+  const roomB = new ViewManager();
+  roomB.addView(redView);
+  roomB.addView(greenView);
+  roomB.addView(blueView);
+  roomB.addView(grayView);
+  roomB.addView(sdViewB);
+  sdViewB.setRoom?.(roomB);
+
+  // register rooms (A=0, B=1) and let WORLD receive key events
+  WORLD.addRoom(roomA);   // index 0
+  WORLD.addRoom(roomB);   // index 1
+  R.add(WORLD, 1000);
 }
+
+
+
+// function setupRoom() {
+//   // Create the view instances
+//   let computerView = new ComputerView();        // North wall (pcWall.webp) - starting view
+//   let boxesView = new BoxesView();              // East wall (boxesWall.webp) - right from start
+//   let billboardView = new BillboardView();      // South wall (billBoardWall.webp) - left from start  
+//   let fcView = new FileCabinetView();           // West wall (cabinetWall.webp) - behind start
+//   let sdView = new SlidingDoorView([{
+//     x:12, 
+//     y:2.5,
+//     scale:0.8, 
+//     targetView: fcView
+//   }]); 
+
+//   room = new ViewManager();
+//   // Add views in navigation order: North -> East -> South -> West
+//   room.addView(computerView);    // 0: North (start here) - pcWall
+//   room.addView(boxesView);       // 1: East (right arrow) - boxesWall  
+//   room.addView(billboardView);   // 2: South (continue right) - billBoardWall
+//   room.addView(fcView);          // 3: West (continue right, left from start) - cabinetWall
+//   room.addView(sdView);
+
+//   R.add(room);
+// }

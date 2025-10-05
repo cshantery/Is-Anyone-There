@@ -1,0 +1,2391 @@
+class WorldManager {
+    constructor() {
+        this.rooms = [];   // array of ViewManager instances
+        this.current = 0;  // index of active room
+    }
+
+    keyPressed() {
+        if (window.activeInterface) return true; // block when a modal is open
+        const room = this.activeRoom;
+        if (room && typeof room.keyPressed === 'function') {
+            room.keyPressed();
+            return true; // consume
+        }
+    }
+
+    addRoom(vm) {
+        if (this.rooms.length === 0) {
+            this.rooms.push(vm);
+            R.add(vm);
+            if (typeof vm.onEnter === 'function') vm.onEnter();
+        } else {
+            this.rooms.push(vm);
+        }
+        return vm;
+    }
+
+    get activeRoom() {
+        return this.rooms[this.current];
+    }
+
+    gotoRoom(indexOrVm, viewIndex = 0) {
+        const nextIndex = (typeof indexOrVm === 'number')
+            ? indexOrVm
+            : this.rooms.indexOf(indexOrVm);
+
+        if (nextIndex < 0 || nextIndex >= this.rooms.length) return;
+
+        const currentVm = this.rooms[this.current];
+        R.remove(currentVm);
+        if (typeof currentVm.onExit === 'function') currentVm.onExit();
+
+        this.current = nextIndex;
+
+        const nextVm = this.rooms[this.current];
+        R.add(nextVm);
+        if (typeof nextVm.onEnter === 'function') nextVm.onEnter();
+
+        // land on a specific view within that room
+        if (typeof viewIndex === 'number' && typeof nextVm.gotoIndex === 'function') {
+            nextVm.gotoIndex(viewIndex);
+        }
+    }
+}
+class Terminal {
+  constructor(onExit = () => {}) {
+    this.onExit = onExit;
+    this.input = "";
+    this.history = [];
+    this.maxLines = 8;    // how many lines to show in the modal
+
+    // Mark interface as active
+    window.activeInterface = 'Terminal';
+
+    this._closeBtn = new Button(13.3, 1.1, 0.6, (self) => {
+      R.selfRemove(self);
+      R.remove(this);
+      window.activeInterface = null; // Clear active interface flag
+      this.onExit();
+    });
+    R.add(this._closeBtn, 11);
+  }
+
+  draw() {
+    const u = VM.u(), v = VM.v();
+
+    push();
+    // Draw the terminal background using the screen.webp image
+    let screenSprite = SM.get("screen");
+    if (screenSprite && screenSprite.src) {
+        image(screenSprite.src, 2 * u, 1 * v, 12 * u, 7 * v);
+    } else {
+        // fallback: draw a black background if image not loaded
+        fill(0); // Black background
+        stroke(128); // Gray border instead of green
+        strokeWeight(2);
+        rect(2 * u, 1 * v, 12 * u, 7 * v, 10);
+    }
+
+    // Terminal header bar
+    noStroke();
+    fill(60); // Slightly lighter gray for header
+    rect(2 * u, 1 * v, 12 * u, 0.8 * v, 10);
+    
+    // Terminal header text with green glow
+    fill(0, 255, 0, 150); // Bright green with transparency for glow effect
+    textAlign(LEFT, CENTER);
+    textSize(0.45 * v);
+    // Draw text multiple times for glow effect
+    textFont(terminusFont);
+    text("Terminal", (2.3) * u + 1, (1.4) * v + 1); // Offset for glow
+    fill(0, 255, 0); // Bright green
+    text("Terminal", (2.3) * u, (1.4) * v);
+
+    const left = 2.3 * u;
+    const top = (1.9) * v;
+    const lh = 0.6 * v;
+
+    // Add scan lines effect
+    stroke(0, 0, 0, 30);
+    strokeWeight(1);
+    for (let i = 0; i < 7 * v; i += 4) {
+        line(2 * u, (1 * v) + i, 14 * u, (1 * v) + i);
+    }
+    noStroke();
+
+    const start = Math.max(0, this.history.length - this.maxLines);
+    let y = top;
+    textAlign(LEFT, TOP);
+    textSize(0.4 * v); // Slightly smaller for retro look
+
+    for (let i = start; i < this.history.length; i++) {
+        // Draw text with glow effect
+        fill(0, 255, 0, 100); // Glow
+        text("> " + this.history[i], left + 1, y + 1);
+        fill(0, 255, 0); // Main text
+        text("> " + this.history[i], left, y);
+        y += lh;
+    }
+
+    // Blinking Cursor with glow
+    const cursor = frameCount % 60 < 30 ? "_" : " ";
+    fill(0, 255, 0, 100); // Glow
+    text("> " + this.input + cursor, left + 1, y + 1);
+    fill(0, 255, 0); // Main text
+    text("> " + this.input + cursor, left, y);
+
+    pop();
+  }
+
+  update(dt) {}
+
+  keyPressed() {
+    // Arrow keys exit the terminal
+    if (keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {
+      R.selfRemove(this._closeBtn);
+      R.remove(this);
+      window.activeInterface = null; // Clear active interface flag
+      this.onExit();
+      return;
+    }
+
+    // Submit
+    if (keyCode === ENTER || keyCode === RETURN) {
+      //check if it starts with * and look through the list of passwords to see if it matches, case sensitive. if it does, run that command. else, check it for the list of regular commands, and if it matches, run it.
+      // Check if it's a password command before adding to history
+      if (this.input.startsWith('*')) {
+        // Try to check password
+        if (typeof checkPassword === 'function' && checkPassword(this.input)) {
+          // Password was correct, close terminal and execute sequence
+          R.selfRemove(this._closeBtn);
+          R.remove(this);
+          window.activeInterface = null;
+          this.onExit();
+          return;
+        } else {
+          // Invalid password, show error
+          this.history.push(this.input);
+          this.history.push("Invalid password");
+        }
+      } else {
+        // Regular command, just add to history for now
+        this.history.push(this.input);
+      }
+      
+      // keep history bounded
+      if (this.history.length > 200) this.history.shift();
+      this.input = "";
+      return;
+    }
+
+    // Backspace
+    if (keyCode === BACKSPACE) {
+      this.input = this.input.slice(0, -1);
+      return;
+    }
+
+    // Accept only ASCII
+    if (typeof key === "string" && /^[\x20-\x7E]$/.test(key)) {
+      this.input += key;
+    }
+  }
+
+  // Clean up if you ever remove it externally
+  onRemove() {
+    R.remove(this._closeBtn);
+  }
+}
+
+
+class PinButton extends Button {
+    constructor(x, y, size, val, onClick = () => {}) {
+        super(x, y, size, onClick);
+        this.x = x;
+        this.y = y;
+        this.size = size;
+        this.val = val;
+    }
+
+    draw() {
+        //super.draw();
+        const u = VM.u();
+        const v = VM.v();
+        
+        push();
+        noStroke();
+        fill(0);
+        textAlign(CENTER, CENTER);
+        textFont(terminusFont);
+        textSize(this.size * 0.6 * v);
+        const cx = (this.x + this.size / 2) * u;
+        const cy = (this.y + this.size / 2) * v;
+        text(String(this.val), cx, cy);
+        pop();
+    }
+}
+
+class Pinpad {
+    constructor( onExit = () => {}) {
+        this.code = [];
+        this.onExit = onExit;
+        this.label = "";
+        this.pass = '749'; // based on RGB pattern of clues
+        this.isProcessing = false;
+        this.feedbackColor = null; // null, 'green', or 'red'
+        
+        // Mark interface as active
+        window.activeInterface = 'Pinpad';
+        
+        this._exitBtn = new Button(11.2, 1.4, 0.6, (self) => {
+            // Clean up pinpad interface first
+            R.selfRemove(self);
+            this.pinButtons.forEach((obj) => {
+                R.remove(obj);
+            });
+            R.remove(this);
+            
+            // Clear active interface flag and call onExit callback
+            window.activeInterface = null;
+            this.onExit();
+        });
+        R.add(this._exitBtn, 15); // Higher z-index to render on top
+
+        this.pinButtons = [];
+
+        // digits 1–9
+        for (let i = 0; i < 9; ++i) {
+            const col = i % 3;                 // 0,1,2
+            const row = Math.floor(i / 3);     // 0,1,2
+            const val = i + 1;
+
+            const btn = new PinButton(
+                5.85 + col * 1.75, 
+                3.4 + row * 1.5, 
+                0.9, 
+                val,
+                () => {
+                    if (this.isProcessing) return; // Prevent spamming
+                    this.label += val;
+                    if (this.label.length === 3) {
+                        this.isProcessing = true;
+                        const isCorrect = this.label === this.pass;
+                        this.feedbackColor = isCorrect ? 'green' : 'red';
+                        console.log(isCorrect ? "Correct Pin!" : "Incorrect Pin!");
+                        setTimeout(() => {
+                            this.label = '';
+                            this.feedbackColor = null;
+                            this.isProcessing = false;
+                            if(isCorrect) {
+                                GS.Solved();
+                            }
+                        }, 500);
+                    }
+                }
+            );
+
+            this.pinButtons.push(btn);
+            R.add(btn, 10);
+        }
+
+    }
+
+    draw() {
+        const u = VM.u();
+        const v = VM.v();
+
+        push();
+        let pinPadBig = SM.get("pinpad");
+        if (pinPadBig && pinPadBig.src) {
+            image(pinPadBig.src, 5 * u, 1.4 * v, 6 * u, 7 * v);
+        } else {
+        }
+        
+        // Set text color based on feedback
+        if (this.feedbackColor === 'green') {
+            fill(0, 255, 0); // Green for correct
+        } else if (this.feedbackColor === 'red') {
+            fill(255, 0, 0); // Red for incorrect
+        } else {
+            fill(255, 255, 255); // White for normal
+        }
+        
+        textAlign(LEFT);
+        textSize(1 * v);
+        textFont(terminusFont);
+        text(this.label, 5.8 * u, 2.1 * v);
+
+        pop();
+    }
+
+    update(dt) {
+
+    }
+
+    keyPressed() {
+        // Arrow keys exit the pinpad
+        if (keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {
+            // Clean up pinpad interface first
+            R.selfRemove(this._exitBtn);
+            this.pinButtons.forEach((obj) => {
+                R.remove(obj);
+            });
+            R.remove(this);
+            
+            // Clear active interface flag and call onExit callback
+            window.activeInterface = null;
+            this.onExit();
+            return;
+        }
+
+        if (this.isProcessing) return; // Prevent input during processing
+        
+        if (keyCode === BACKSPACE) {
+            this.label = this.label.slice(0, -1);
+        } else if (this.label.length < 3 && /^[0-9]$/.test(key)) {
+            this.label += key;
+            if (this.label.length === 3) {
+                this.isProcessing = true;
+                const isCorrect = this.label === this.pass;
+                this.feedbackColor = isCorrect ? 'green' : 'red';
+                console.log(isCorrect ? "Correct Pin!" : "Incorrect Pin!");
+                setTimeout(() => {
+                    this.label = '';
+                    this.feedbackColor = null;
+                    this.isProcessing = false;
+                }, 500);
+            }
+        }
+    }
+
+}
+
+class ComputerView extends View {
+    constructor() {
+        super();
+        
+        this.background = SM.get("NorthWall");
+        // Fills the screen
+        this.background.setSize(16, 9);
+    
+        this.pinpad = SM.get("pinpad");
+        this.pinpad.setScale(0.5);
+        this.pinpad.setPos(12.5, 6);
+
+        this.terminalHighlight = new HighlightEvent(
+            2.33, 0.25, 10.1, 6.6, 255, 255, 0,
+            (self) => {
+                // Don't open terminal if another interface is active
+                if (window.activeInterface) {
+                    return;
+                }
+                
+                R.selfRemove(self);
+                R.remove(this.pinpadHighlight);
+                R.add(new Terminal(() => {
+                    // Add a small delay before re-enabling highlights to prevent immediate re-triggering
+                    setTimeout(() => {
+                        R.add(this.terminalHighlight);
+                        R.add(this.pinpadHighlight);
+                    }, 100);
+                }));
+            }
+        );
+
+
+        this.pinpadHighlight = new HighlightEvent(12.5, 6, 1.3, 1.85, 255, 255, 0, (self) => {
+            // Don't open pinpad if another interface is active
+            if (window.activeInterface) {
+                return;
+            }
+            
+            console.log("Pinpad");
+            R.selfRemove(self);
+            R.remove(this.terminalHighlight);
+
+            R.add(new Pinpad(() => {
+                // Add a small delay before re-enabling highlights to prevent immediate re-triggering
+                setTimeout(() => {
+                    R.add(this.terminalHighlight);
+                    R.add(this.pinpadHighlight);
+                }, 100);
+            }));
+            
+        });
+    }
+
+    onEnter() {
+        R.add(this.background);
+        R.add(this.pinpad);
+        R.add(this.terminalHighlight);
+        R.add(this.pinpadHighlight);
+    }
+
+    onExit() {
+        R.remove(this.background);
+        R.remove(this.pinpad);
+        this.pinpad.label = ''; // reset pinpad input on exit
+        R.remove(this.terminalHighlight);
+        R.remove(this.pinpadHighlight);
+    }
+}const doorWidth = 2.5;
+const doorHeight = 6; 
+
+const doorClickWidth = 2.5; 
+const doorClickHeight = 6;
+
+const frameDuration = 0.1; 
+
+class SlidingDoor {
+    constructor(x, y, scale, onClick = () => { }, cfg = {}) {
+        this.x = x;
+        this.y = y;
+        this.scale = scale;
+        this.onClick = onClick;
+
+        // clickable highlight
+        this.highlight = new HighlightEvent(this.x, this.y, doorWidth, doorHeight);
+
+        this.targetView = cfg.targetView ?? null;       
+        this.targetRoom = cfg.targetRoom ?? null;       
+        this.targetViewIndex = cfg.targetViewIndex ?? 0;
+
+        // loading frames of sliding door
+        this.frames = [
+            // clone just makes sure each sliding 
+            // door gets their own individual frame
+            SM.get("SlidingDoor1").clone(),
+            SM.get("SlidingDoor2").clone(),
+            SM.get("SlidingDoor3").clone(),
+            SM.get("SlidingDoor4").clone()
+        ];
+
+        this.frames.forEach(f => {
+            if (!f) throw new Error("SlidingDoor frame missing!");
+            f.setPos(this.x, this.y);
+            f.setScale(this.scale);
+            f.setSize(doorWidth, doorHeight)
+        });
+
+        this.currentFrame = 0; // what frame we're drawing, default (0) means it's closed
+        this.isOpen = false; // door is closed
+        this.animating = false; 
+        this.animationTimer = 0; 
+        this.frameDuration = frameDuration; // 0.1s per frame
+    }
+
+    mousePressed(p) {
+        // kind of combined isMouseInBounds with mousePressed
+        const m = p || VM.mouse();
+        if (m.x >= this.x  && m.x <= this.x + doorClickWidth &&
+            m.y >= this.y  && m.y <= this.y + doorClickHeight &&
+            !this.animating
+        ) {
+            this.toggle();
+
+            if (this.targetView) {
+                setTimeout(() => {
+                    if (this.targetView) {
+                        if (this._room && typeof this._room.gotoView === 'function') {
+                            this._room.gotoView(this.targetView);
+                        }
+                    } else if (this.targetRoom != null && typeof WORLD?.gotoRoom === 'function') {
+                        WORLD.gotoRoom(this.targetRoom, this.targetViewIndex);
+                    }
+                }, 450);
+                return true;
+
+            }
+        }
+    }
+
+    // switching between open and closed 
+    toggle() {
+        this.isOpen = !this.isOpen;
+        this.animating = true; // starting animation
+        this.animationTimer = 0; // reset timer 
+    }
+
+    update(dt) {
+        if (!this.animating) return; // do nothing if no animation
+
+        this.animationTimer += dt; // counting how much time has passed since last frame change
+        if (this.animationTimer >= this.frameDuration) {
+            this.animationTimer = 0; // reset for next frame 
+            if (this.isOpen) {
+                // move to the next frame 
+                this.currentFrame++;
+                if (this.currentFrame >= this.frames.length - 1) {
+                    this.currentFrame = this.frames.length - 1;
+                    this.animating = false;
+                }
+            } else { // means the door is closing, move to prev. frame 
+                this.currentFrame--;
+                if (this.currentFrame == 0) {
+                    this.animating = false;
+                }
+            }
+        }
+    }
+
+    setRoom(vm) { 
+        this._room = vm; 
+    }
+
+    draw() {
+        this.frames[this.currentFrame].draw();
+    }
+
+    onEnter() {
+        R.add(this);
+        R.add(this.highlight);
+
+
+    }
+
+    onExit() {
+        R.remove(this);
+        R.remove(this.highlight); 
+
+    }
+}
+
+class SlidingDoorView extends View {
+    // added the backgroundAsset so it can be flexible
+    // if someone in the future wants a different background 
+    constructor(slidingDoors = [], backgroundAsset = null) {
+        super(0, 0, 0, '');
+        
+        // if someone wants a new background, insert it.. 
+        // on default will use southWall
+        this.background = backgroundAsset ?? SM.get("SouthWall");
+        this.background.setSize(16, 9); 
+
+        // FIX: pass the entire config as cfg
+        this.door = slidingDoors.map(config => new SlidingDoor(
+            config.x,
+            config.y,
+            config.scale,
+            config.onClick ?? (() => { }),
+            config
+        ));
+
+        }
+
+    update(dt) {
+        this.door.forEach(door=> door.update(dt));
+    }
+
+    draw() {
+        this.background.draw();
+        this.door.forEach(door => door.draw());
+    }
+
+    onEnter() {
+        R.add(this); 
+        this.door.forEach(door => door.onEnter());
+
+    }
+
+    onExit() {
+        R.remove(this);
+        this.door.forEach(door => door.onExit());
+    }
+
+    mousePressed(p) {
+        this.door.forEach(door => door.mousePressed(p));
+    }
+
+    setRoom(vm) {
+        this.door.forEach(d => d.setRoom(vm));
+    }
+}
+
+class View {
+  // Very Temporary Constructor later will be probably replaced with sprites and other stuff
+  constructor(r=0, g=0, b=0, name="") {
+    this.r = r;
+    this.g = g;
+    this.b = b;
+    this.name = name;
+  }
+
+  draw() {
+    // Fill whole canvas; canvas itself is already 16:9
+    noStroke();
+    fill(this.r, this.g, this.b);
+    rect(0, 0, width, height);
+
+    // Optional label centered using 16:9 units
+    const u = width / 16, v = height / 9;
+    fill(0);
+    textAlign(CENTER, CENTER);
+    textSize(0.5 * v);
+    text(this.name, 8 * u, 4.5 * v);
+  }
+
+  onEnter() {}
+  onExit() {}
+}
+
+class ViewManager {
+  constructor() {
+    this.Views = [];
+    this._currentView = 0;
+  }
+
+  addView(obj) {
+    this.Views.push(obj);
+  }
+
+  onEnter() {
+    const v = this.Views[this._currentView];
+    if (v) { R.add(v); v.onEnter?.(); }
+  }
+
+  onExit() {
+    const v = this.Views[this._currentView];
+    if (v) { R.remove(v); v.onExit?.(); }
+  }
+
+  keyPressed() {
+    if (window.activeInterface) return;
+
+    const current = this.Views[this._currentView];
+    if (keyCode === LEFT_ARROW) {
+      R.remove(current); current.onExit?.();
+      this._currentView = (this._currentView - 1 + this.Views.length) % this.Views.length;
+      const next = this.Views[this._currentView]; R.add(next); next.onEnter?.();
+    } else if (keyCode === RIGHT_ARROW) {
+      R.remove(current); current.onExit?.();
+      this._currentView = (this._currentView + 1) % this.Views.length;
+      const next = this.Views[this._currentView]; R.add(next); next.onEnter?.();
+    }
+  }
+
+  gotoView(viewInstance){
+    const current = this.Views[this._currentView];
+    R.remove(current); current.onExit?.();
+
+    const index = this.Views.indexOf(viewInstance);
+    if(index === -1){ console.warn("this view is not in viewmanager!"); return; }
+
+    this._currentView = index;
+    const next = this.Views[this._currentView]; R.add(next); next.onEnter?.();
+  }
+
+  gotoIndex(i) {
+    if (i < 0 || i >= this.Views.length) return;
+    const current = this.Views[this._currentView];
+    R.remove(current); current.onExit?.();
+    this._currentView = i;
+    const next = this.Views[this._currentView]; R.add(next); next.onEnter?.();
+  }
+}
+
+
+class GameState {
+  constructor() {
+    this.timerUp = false;
+    this.solved = false;
+  }
+
+  TimerDone() {
+    this.timerUp = true;
+  }
+
+  getTimer() {
+    return this.timerUp;
+  }
+
+  Solved() {
+    this.solved = true;
+  }
+
+  getSolved() {
+    return this.solved;
+  }
+
+  isEnded() {
+    return this.solved || this.timerUp;
+  }
+}
+/**
+ * Note to anyone using this as a reference for making views:
+ * Pay close attention to the z-index (which elements are on top) when doing R.add(SOMETHING),
+ * For e.g:
+ *      Z-index of the FileCabinet object's sprite must be greater than z-index of the room
+ *      background image.
+ */
+
+class FileCabinet {
+    constructor(id, x, y, scale, img,  onClick = () => {}) {
+        this.id = id;
+        this.x = x;
+        this.y = y;
+        this.scale = scale;
+
+        this.background = SM.get(img);
+        this.background.setPos(this.x, this.y);
+        this.background.setScale(this.scale);
+        this.width = 1.93
+        this.height = 2.3
+
+        this.onClick = onClick;
+        this.highlight = new HighlightEvent(this.x, this.y, this.width, this.height);
+    }
+
+    isMouseInBounds(mx, my) {
+        const m = mx != null && my != null ? { x: mx, y: my } : VM.mouse();
+
+        return (
+            m.x >= this.x &&
+            m.x <= this.x + this.width &&
+            m.y >= this.y &&
+            m.y <= this.y + this.height
+        );
+    }
+
+    onEnter() {
+        R.add(this.background, 9)
+        R.add(this.highlight);
+    }
+    onExit() {
+        R.remove(this.background);
+        R.remove (this.highlight);
+    }
+
+    mousePressed(p) {
+        if (this.isMouseInBounds(p?.x, p?.y)) {
+            this.onClick(this);
+        }
+    }
+}
+
+class OpenCabinetUI {
+  constructor(onExit = () => {}) {
+    this.onExit = onExit;
+
+    // close button removes itself and calls cleanup onRemove
+    this._closeBtn = new Button(11.5, 2.4, 0.6, (self) => {
+      R.selfRemove(self);
+      R.remove(this);
+      onExit();
+      this.onRemove()
+    });
+    
+    this.numberImage = SM.get('secondNumber');
+    this.numberImage.setPos(7, 3.4);
+    this.numberImage.setScale(4);
+  }
+
+  draw() {
+    const u = VM.u(), v = VM.v();
+
+    push();
+    fill(169,169,169);
+    stroke(255);
+    strokeWeight(2);
+    rect(3.5 * u, 2.2 * v, 9 * u, 4.6666 * v, 10);
+
+    pop();
+  }
+
+  update(dt) {}
+
+  keyPressed() {
+
+  }
+
+  /* The following two member functions just for removing what's on the UI. Call add before adding OpenCabinetUI to R
+  and call remove when removing OpenCabinetUI to R
+  
+  TODO: I'm sure there is a way of doing this without these*/
+  onAdd(){
+    R.add(this._closeBtn, 11);
+    R.add(this.numberImage, 15)
+  }
+
+  onRemove() {
+    R.remove(this._closeBtn);
+    R.remove(this.numberImage)
+  }
+} 
+
+class FileCabinetView extends View {
+    constructor() {
+        super(0,0,0,'');
+        this.background = SM.get("WestWall");
+        this.background.setSize(16, 9);
+
+        this.textNotificationHandler = new TextNotificationHandler(0.5, 0.85);
+        this.secretId = 2; // index of cabinet that will be unlocked
+        
+        this.cabinetUI = new OpenCabinetUI();
+
+        this.scale = 0.3
+        this.allFileCabinets = [];
+        for(let i = 0; i < 4; i++){
+            this.allFileCabinets.push(new FileCabinet(i, 1.5+3*i, 5.7, this.scale, `FileCabinet${i+1}`, (obj) => {
+                console.log(`File Cabinet ${i} Clicked`)
+
+                if(obj.id == this.secretId){
+                    console.log('this is the secret cabinet.')
+                    this.textNotificationHandler.addText('You opened a mysterious file cabinet.')
+                    this.cabinetUI.onAdd()
+                    R.add(this.cabinetUI, 10)
+                }else{
+                    this.textNotificationHandler.addText('This file cabinet appears to be locked...')
+                    console.log('this is a locked cabinet.')
+                }
+            }));
+        }
+    }
+
+    update(dt){
+        // pass time to fading logic for text notifications
+        this.textNotificationHandler.update(dt)
+    }
+
+    draw() {
+
+    }
+
+    onEnter() {
+        // add objects to renderer
+        R.add(this.background);
+        for(let i = 0; i < 4; i++){
+            R.add(this.allFileCabinets[i])
+        }
+        // call onenters
+        for(let i = 0; i < 4; i++){
+            this.allFileCabinets[i].onEnter()
+        }
+    }
+
+    onExit() {
+        R.remove(this.background);
+        
+        // make sure we remove UI on view change
+        this.cabinetUI.onRemove()
+        R.remove(this.cabinetUI)
+
+        // remove all the cabinets too
+        for(let i = 0; i < 4; i++){
+            R.remove(this.allFileCabinets[i])
+        }
+
+        // remove highlights and sprite for filecabinet objects
+        for(let i = 0; i < 4; i++){
+            this.allFileCabinets[i].onExit()
+        }
+
+        this.textNotificationHandler.cleanup()
+    }
+}/**
+ * This file contains a bunch of views that are examples on how to do things, 
+ * they are NOT in the demos or the actual game (we were using them only for testing).
+ * 
+ * If you want to understand how views work, see FileCabinetView.js, ComputerView.js (both fully documented)
+ * and also DOCUMENTATION.md for explanations and common errors.
+ */
+
+class TimerView extends View {
+  constructor() {
+    super(255, 99, 71, 'Room 2 - Timer');
+    this.timer = new Timer(30000);
+    this.timeLabel = 0;
+  }
+
+  update(dt) {
+    this.timeLabel = this.timer.getSeconds();
+  }
+
+  draw() {
+    super.draw();
+
+    const u = VM.u();
+    const v = VM.v();
+
+    push();
+    fill(0);
+    textAlign(CENTER, CENTER);
+
+    textSize(1.0 * v);
+    text(this.timeLabel, 8 * u, 2.25 * v);
+
+    textSize(0.4 * v);
+    text('Press Space To reset Timer', 8 * u, 4.0 * v);
+    pop();
+  }
+
+  keyPressed() {
+    if (keyCode === 32) this.timer.reset();
+  }
+}
+
+class EventView extends View {
+  constructor() {
+    super(58, 134, 255, 'Room 1');
+
+    // Buttons in units
+    this.bttn1 = new Button(8 - 1.8, 5.5, 0.8, () => { this.text = 'Event 1'; });
+    this.bttn2 = new Button(8 - 0.4, 5.5, 0.8, () => { this.text = 'Event 2'; });
+    this.bttn3 = new Button(8 + 1.0, 5.5, 0.8, () => { this.text = 'Event 3'; });
+
+    this.text = '';
+  }
+
+  draw() {
+    super.draw();
+
+    const u = VM.u();
+    const v = VM.v();
+
+    push();
+    fill(0);
+    textSize(2.0 * v);
+    textAlign(CENTER, CENTER);
+    text(this.text, 8 * u, 2.25 * v);
+
+    textSize(0.9 * v);
+    text('Press Buttons To Show Events', 8 * u, 4.0 * v);
+    pop();
+  }
+
+  onEnter() {
+    R.add(this.bttn1);
+    R.add(this.bttn2);
+    R.add(this.bttn3);
+  }
+
+  onExit() {
+    R.remove(this.bttn1);
+    R.remove(this.bttn2);
+    R.remove(this.bttn3);
+  }
+}
+
+class MoveView extends View {
+  constructor() {
+    super(60, 179, 113, 'Room 3');
+
+    // MoveBlocks in units
+    this.block1 = new MoveBlock(10.5, 6.0, 1.2);
+    this.block2 = new MoveBlock(4.0, 2.2, 1.2);
+    this.block3 = new MoveBlock(4.0, 6.0, 1.2);
+    this.block4 = new MoveBlock(10.5, 2.2, 1.2);
+  }
+
+  draw() {
+    super.draw();
+
+    const u = VM.u();
+    const v = VM.v();
+
+    push();
+    textSize(0.2 * v);
+    textAlign(CENTER, CENTER);
+    text('Move the Boxes around!', 8 * u, 4.8 * v);
+    pop();
+  }
+
+  onEnter() {
+    R.add(this.block1);
+    R.add(this.block2);
+    R.add(this.block3);
+    R.add(this.block4);
+  }
+
+  onExit() {
+    R.remove(this.block1);
+    R.remove(this.block2);
+    R.remove(this.block3);
+    R.remove(this.block4);
+  }
+}
+
+class BillboardView extends View {
+  constructor() {
+    super(0, 0, 0, '');
+    this.background = SM.get("SouthWall");
+    this.background.setSize(16, 9);
+  }
+
+  update(dt) {}
+
+  draw() {}
+
+  onEnter() {
+    R.add(this.background);
+  }
+
+  onExit() {
+    R.remove(this.background);
+  }
+}
+
+class BoxesView extends View {
+  constructor() {
+    super(0, 0, 0, '');
+    this.background = SM.get("EastWall");
+    this.background.setSize(16, 9);
+  }
+
+  update(dt) {}
+
+  draw() {}
+
+  onEnter() {
+    R.add(this.background);
+  }
+
+  onExit() {
+    R.remove(this.background);
+  }
+}
+// password: henry 
+// effect: cut to black, play audio, fade in image. if ESC pressed, restart the game
+
+class HenryPasswordSequence {
+  constructor() {
+    this.phase = 'cutToBlack'; // 'cutToBlack', 'playingAudio', 'fadeInImage', 'showingImage'
+    this.fadeValue = 255; // For black screen fade out
+    this.imageFadeValue = 0; // For image fade in
+    this.audio = henryAudio; // Use preloaded asset
+    this.image = henryImage; // Use preloaded asset
+    this.startTime = 0;
+    this.audioStarted = false;
+    
+    // Mark interface as active to prevent normal game interaction
+    window.activeInterface = 'HenrySequence';
+    
+    this.startTime = Date.now();
+  }
+  
+  draw() {
+    const u = VM.u();
+    const v = VM.v();
+    
+    // Fill the entire screen
+    push();
+    
+    if (this.phase === 'cutToBlack') {
+      // Immediate cut to black
+      background(0);
+      
+      // After a brief moment, start audio
+      if (Date.now() - this.startTime > 500 && !this.audioStarted) {
+        this.startAudio();
+      }
+      
+    } else if (this.phase === 'playingAudio' || this.phase === 'fadeInImage') {
+      // Keep black background during audio
+      background(0);
+      
+      // Start fading in the image after audio has been playing for a bit
+      if (this.phase === 'fadeInImage' && this.image) {
+        tint(255, this.imageFadeValue);
+        
+        // Center the image on screen, scale to fit
+        const aspectRatio = this.image.width / this.image.height;
+        let imgWidth, imgHeight;
+        
+        if (aspectRatio > 16/9) {
+          // Image is wider than screen ratio
+          imgWidth = 16 * u;
+          imgHeight = (16 * u) / aspectRatio;
+        } else {
+          // Image is taller than screen ratio
+          imgHeight = 9 * v;
+          imgWidth = (9 * v) * aspectRatio;
+        }
+        
+        const imgX = (16 * u - imgWidth) / 2;
+        const imgY = (9 * v - imgHeight) / 2;
+        
+        image(this.image, imgX, imgY, imgWidth, imgHeight);
+        noTint();
+        
+        // Gradually increase image opacity
+        this.imageFadeValue = min(255, this.imageFadeValue + 3);
+        
+        if (this.imageFadeValue >= 255) {
+          this.phase = 'showingImage';
+        }
+      }
+      
+    } else if (this.phase === 'showingImage') {
+      // Show the image at full opacity
+      background(0);
+      
+      if (this.image) {
+        const aspectRatio = this.image.width / this.image.height;
+        let imgWidth, imgHeight;
+        
+        if (aspectRatio > 16/9) {
+          imgWidth = 16 * u;
+          imgHeight = (16 * u) / aspectRatio;
+        } else {
+          imgHeight = 9 * v;
+          imgWidth = (9 * v) * aspectRatio;
+        }
+        
+        const imgX = (16 * u - imgWidth) / 2;
+        const imgY = (9 * v - imgHeight) / 2;
+        
+        image(this.image, imgX, imgY, imgWidth, imgHeight);
+
+      }
+      
+      // Show ESC instruction
+      fill(255);
+      textAlign(CENTER, BOTTOM);
+      textFont(terminusFont);
+      textSize(0.3 * v);
+      text("Press ESC to restart the game", 8 * u, 8.5 * v);
+    }
+    
+    pop();
+  }
+  
+  startAudio() {
+    if (this.audio && !this.audioStarted && this.audio.isLoaded()) {
+      this.audio.play();
+      this.audioStarted = true;
+      // Start fading in image immediately when audio starts
+      this.phase = 'fadeInImage';
+      
+    } else if (!this.audioStarted) {
+      // If audio isn't loaded or fails, still proceed to image after delay
+      console.warn('Henry audio not loaded, proceeding without audio');
+      this.phase = 'fadeInImage';
+      this.audioStarted = true; // Prevent repeated attempts
+    }
+  }
+  
+  update(dt) {
+    // Handle phase transitions and timing, TBD
+  }
+  
+  keyPressed() {
+    if (keyCode === ESCAPE || key === 'Escape') {
+      this.restartGame();
+    }
+  }
+  
+  restartGame() {
+    // Stop audio if playing
+    if (this.audio && this.audio.isPlaying()) {
+      this.audio.stop();
+    }
+    
+    // Clear active interface
+    window.activeInterface = null;
+    
+    // Remove this sequence from renderer
+    R.remove(this);
+    
+    // Restart the game by reloading the page
+    // This is the simplest way to ensure a clean restart
+    location.reload();
+  }
+  
+  // Clean up when removed
+  onRemove() {
+    if (this.audio && this.audio.isPlaying()) {
+      this.audio.stop();
+    }
+    window.activeInterface = null;
+  }
+}
+
+// Password checking function that can be called from Terminal
+function checkPassword(input) {
+  if (input.startsWith('*') && input.slice(1).toLowerCase() === 'henry') {
+    // Trigger henry sequence
+    const henrySequence = new HenryPasswordSequence();
+    R.add(henrySequence, 100); // High z-index to render on top of everything
+    return true;
+  }
+  return false;
+}class StartScreenView extends View {
+  constructor(onStart) {
+    super(0, 0, 0, '');
+    this.onStart = onStart;
+
+    // Button in 16:9 units (centered horizontally)
+    this.btnW = 2.8;
+    this.btnH = 0.9;
+    this.btnX = 8 - this.btnW / 2;
+    this.btnY = 5.8;
+
+    this.title = 'Is Anyone There?';
+    this.instruction = 'Click anywhere to start music!';
+    this.musicStarted = false;
+
+    // Star field in units
+    this.stars = Array.from({ length: 200 }, () => ({
+      x: random(16),
+      y: random(9),
+      r: random(0.02, 0.06),
+      a: random(120, 255)
+    }));
+
+    // Shooting star in units
+    this.fromX = 0;
+    this.fromY = 0;
+    this.toX = 0;
+    this.toY = 0;
+    this.step = 3;
+  }
+
+  drawStarField() {
+    const u = VM.u();
+    const v = VM.v();
+
+    for (const s of this.stars) {
+      s.a += random(-5, 5);
+      stroke(255, s.a);
+      strokeWeight(s.r * u);
+      point(s.x * u, s.y * v);
+    }
+  }
+
+  drawShootingStar() {
+    const u = VM.u();
+    const v = VM.v();
+
+    if (this.step >= 2.5) {
+      this.fromX = random(16);
+      this.fromY = random(4.5);
+      this.toX = random(this.fromX + 0.5, 16);
+      this.toY = random(this.fromY + 0.2, 4.5);
+      this.step = 0;
+    }
+
+    if (this.step < 2.5) {
+      const n = this.step + 0.02;
+
+      stroke(0, 20, 80, 30);
+      strokeWeight(0.03 * u);
+      line(this.fromX * u, this.fromY * v, this.toX * u, this.toY * v);
+
+      if (this.step < 1) {
+        stroke(255, (1 - this.step) * 200);
+        strokeWeight(0.02 * u);
+
+        const ax = lerp(this.fromX, this.toX, this.step);
+        const ay = lerp(this.fromY, this.toY, this.step);
+        const bx = lerp(this.fromX, this.toX, n);
+        const by = lerp(this.fromY, this.toY, n);
+
+        line(ax * u, ay * v, bx * u, by * v);
+      }
+
+      this.step = n;
+    }
+  }
+
+  drawButton() {
+    const u = VM.u();
+    const v = VM.v();
+
+    const m = VM.mouse();
+    const hover =
+      m.x >= this.btnX &&
+      m.x <= this.btnX + this.btnW &&
+      m.y >= this.btnY &&
+      m.y <= this.btnY + this.btnH;
+
+    if (hover) {
+      fill(100, 150, 255, 200);
+      stroke(150, 200, 255, 150);
+      strokeWeight(0.08 * u);
+    } else {
+      fill(50, 100, 200, 200);
+      noStroke();
+    }
+
+    rect(this.btnX * u, this.btnY * v, this.btnW * u, this.btnH * v, 0.5 * u);
+
+    fill(255);
+    noStroke();
+    textAlign(CENTER, CENTER);
+    textFont(gameFont);
+    textSize(0.25 * v);
+    const cx = (this.btnX + this.btnW / 2) * u;
+    const cy = (this.btnY + this.btnH / 2) * v;
+    text('Start!', Math.round(cx), Math.round(cy));
+  }
+
+  draw() {
+    background(0, 20, 80, 25);
+
+    const u = VM.u();
+    const v = VM.v();
+
+    this.drawStarField();
+    this.drawShootingStar();
+
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textFont(gameFont);
+
+    textSize(0.8 * v);
+    text(this.title, 8 * u, 3.7 * v);
+
+    textSize(0.3 * v);
+    text(this.instruction, 8 * u, 4.6 * v);
+
+    this.drawButton();
+  }
+
+  mousePressed(p) {
+    const hit =
+      p.x >= this.btnX &&
+      p.x <= this.btnX + this.btnW &&
+      p.y >= this.btnY &&
+      p.y <= this.btnY + this.btnH;
+
+    if (hit && this.onStart) {
+      this.onStart();
+    } else if (!hit && !this.musicStarted) {
+      // Start music on any click on the start screen (not just the button)
+      if (startScreenMusic && !startScreenMusic.isPlaying()) {
+        startScreenMusic.setLoop(true);
+        startScreenMusic.play();
+        this.musicStarted = true;
+        this.instruction = 'Click Start to Begin!';
+      }
+    }
+  }
+}
+
+class EndScreenView extends View {
+  constructor(Solved) {
+    super(0, 0, 0, '');
+    
+    //Boolean that holds the state when screen appears
+    this.solved = Solved;
+
+    this.title = 'Game Over';
+    this.textColor = this.solved ? 'green' : 'red';
+    this.instruction = this.solved ? 'You Have Won!' : 'Sorry, you Died...';
+
+    // Star field in units
+    this.stars = Array.from({ length: 200 }, () => ({
+      x: random(16),
+      y: random(9),
+      r: random(0.02, 0.06),
+      a: random(120, 255)
+    }));
+
+    // Shooting star in units
+    this.fromX = 0;
+    this.fromY = 0;
+    this.toX = 0;
+    this.toY = 0;
+    this.step = 3;
+  }
+
+  drawStarField() {
+    const u = VM.u();
+    const v = VM.v();
+
+    for (const s of this.stars) {
+      s.a += random(-5, 5);
+      stroke(255, s.a);
+      strokeWeight(s.r * u);
+      point(s.x * u, s.y * v);
+    }
+  }
+
+  drawShootingStar() {
+    const u = VM.u();
+    const v = VM.v();
+
+    if (this.step >= 2.5) {
+      this.fromX = random(16);
+      this.fromY = random(4.5);
+      this.toX = random(this.fromX + 0.5, 16);
+      this.toY = random(this.fromY + 0.2, 4.5);
+      this.step = 0;
+    }
+
+    if (this.step < 2.5) {
+      const n = this.step + 0.02;
+
+      stroke(0, 20, 80, 30);
+      strokeWeight(0.03 * u);
+      line(this.fromX * u, this.fromY * v, this.toX * u, this.toY * v);
+
+      if (this.step < 1) {
+        stroke(255, (1 - this.step) * 200);
+        strokeWeight(0.02 * u);
+
+        const ax = lerp(this.fromX, this.toX, this.step);
+        const ay = lerp(this.fromY, this.toY, this.step);
+        const bx = lerp(this.fromX, this.toX, n);
+        const by = lerp(this.fromY, this.toY, n);
+
+        line(ax * u, ay * v, bx * u, by * v);
+      }
+
+      this.step = n;
+    }
+  }
+
+  draw() {
+    background(0, 0, 0);
+
+    const u = VM.u();
+    const v = VM.v();
+
+    this.drawStarField();
+    this.drawShootingStar();
+
+    if (this.textColor === 'green') {
+      fill(0, 255, 0); // Green for Solved
+    } else if (this.textColor === 'red') {
+      fill(255, 0, 0); // Red for not Solved
+    }
+    textAlign(CENTER, CENTER);
+    textFont(gameFont);
+
+    textSize(0.8 * v);
+    text(this.title, 8 * u, 3.7 * v);
+
+    textSize(0.3 * v);
+    text(this.instruction, 8 * u, 4.6 * v);
+
+  }
+}
+class HighlightEvent {
+    constructor(x, y, width, height, r, g, b, onClick = () => {}) {
+        this.x = x;
+        this.y = y;
+        this.height = height;
+        this.width = width;
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.onClick = onClick;
+    }
+
+    isMouseInBounds(mx, my) {
+        const m = mx != null && my != null ? { x: mx, y: my } : VM.mouse();
+        return (
+            m.x >= this.x &&
+            m.x <= this.x + this.width &&
+            m.y >= this.y &&
+            m.y <= this.y + this.height
+        );
+  }
+
+    draw() {
+        const m = VM.mouse();
+        const u = VM.u();
+        const v = VM.v();
+        
+        if (this.isMouseInBounds(m.x, m.y)) {
+            push();
+            stroke(this.r, this.g, this.b);
+            fill(0, 0, 0, 0);
+            strokeWeight(5);
+            rect(this.x * u, this.y * v, this.width * u, this.height * v);
+            pop();
+        }
+    }
+
+    mousePressed(p) {
+        if (this.isMouseInBounds(p?.x, p?.y)) {
+            this.onClick(this);
+        }
+  }
+}class MoveBlock {
+  /** x and y are the initial positions,
+   * for now the size is just fixed to be a square.
+   * 
+   * movements work by defining a dragDx and dragDy (computed to difference in current position, to where
+   * mouse is moving to). dragDx and dragDy are used in update to move the actual position of block (this.x
+   * and this.y). And draw uses the new positions this.x and this.y to render the moved block.
+   */
+  constructor(x, y, size) {
+    this.x = x;
+    this.y = y;
+    this.size = size;
+
+    this.drag = false;
+    this.dragDx = 0;
+    this.dragDy = 0;
+
+    this.color = [random(255), random(255), random(255)];
+  }
+
+  isMouseInBounds(mx, my) {
+    const m = mx != null && my != null ? { x: mx, y: my } : VM.mouse();
+    return (
+      m.x >= this.x &&
+      m.x <= this.x + this.size &&
+      m.y >= this.y &&
+      m.y <= this.y + this.size
+    );
+  }
+
+  update(dt) {
+    if (!this.drag) return;
+
+    const m = VM.mouse();
+
+    // constatly update real coordinates of block
+    this.x = m.x - this.dragDx;
+    this.y = m.y - this.dragDy;
+  }
+
+  draw() {
+    const u = VM.u();
+    const v = VM.v();
+
+    noStroke();
+    fill(this.color[0], this.color[1], this.color[2]);
+    rect(this.x * u, this.y * v, this.size * u, this.size * v, 8);
+  }
+
+  mousePressed(p) {
+    if (this.isMouseInBounds(p?.x, p?.y)) {
+      const m = VM.mouse();
+      this.drag = true;
+
+      // change in positions on drag
+      this.dragDx = m.x - this.x;
+      this.dragDy = m.y - this.y;
+    }
+  }
+
+  mouseReleased() {
+    this.drag = false;
+  }
+}
+class Timer {
+    constructor(duration) {
+        this.duration = duration;
+        this.start = millis();
+    }
+
+    reset() {
+        this.start = millis();
+    }
+
+    getRemaining() {
+        let elapsed = millis() - this.start;
+        return max(0, this.duration - elapsed);
+    }
+
+    isFinished() {
+        return this.getRemaining() === 0;
+    }
+
+    getSeconds() {
+        return ceil(this.getRemaining() / 1000);
+    }
+}
+
+class ScreenTimer {
+    constructor(onEnd = () => {}) {
+        this.timer = new Timer(120000);   
+        this.label = '';
+        this.onEnd = onEnd;
+    }
+
+    update(dt){
+        if (!this.timer.isFinished()) {
+            this.label = this.timer.getSeconds() + ' s';
+            let secs = floor(this.timer.getRemaining() / 1000);
+            let m = floor(secs / 60);
+            let s = secs % 60;
+            this.label = `${m}:${nf(s, 2)}`;
+        } else {
+            setTimeout(() => {
+                this.label = '0:00';
+                GS.TimerDone();
+                this.onEnd();
+            }, 500);
+        }
+    }
+
+    draw() {
+        push();
+        textSize(18);
+        textAlign(CENTER, CENTER);
+        textStyle(BOLD);
+
+        let pad = 10;
+        let tw = textWidth(this.label) + pad * 2;
+        let th = textAscent() + textDescent() + pad * 2;
+
+        let x = 10;
+        let y = 10;
+
+        rectMode(CORNER);
+        fill(0);
+        stroke(150);
+        strokeWeight(2);
+        rect(x, y, tw, th, 8);
+
+        noStroke();
+        drawingContext.shadowBlur = 20;
+        drawingContext.shadowColor = color(255, 0, 0);
+        fill(255, 0, 0);
+        //text(this.label, width / 2, 60);
+
+        text(this.label, x + tw / 2, y + th / 2);
+        drawingContext.shadowBlur = 0;
+        pop();
+    }
+}class Button {
+  constructor(x, y, size, onClick = () => {}) {
+    this.x = x;
+    this.y = y;
+    this.size = size;
+    this.onClick = onClick;
+
+    this.baseColor = color(200);
+    this.hoverColor = color(150);
+  }
+
+  isMouseInBounds(mx, my) {
+    const m = mx != null && my != null ? { x: mx, y: my } : VM.mouse();
+    return (
+      m.x >= this.x &&
+      m.x <= this.x + this.size &&
+      m.y >= this.y &&
+      m.y <= this.y + this.size
+    );
+  }
+
+  update(dt) {}
+
+  draw() {
+    const u = VM.u();
+    const v = VM.v();
+
+    const c = this.isMouseInBounds() ? this.hoverColor : this.baseColor;
+
+    noStroke();
+    fill(c);
+    rect(this.x * u, this.y * v, this.size * u, this.size * v, 0.5 * u);
+  }
+
+  mousePressed(p) {
+    if (this.isMouseInBounds(p?.x, p?.y)) {
+      this.onClick(this);
+    }
+  }
+}
+
+class ConditionalButton {
+  constructor(x, y, size, onClick = () => {}, canDraw, c1, c2, c3, makeInvisible) {
+    this.x = x;
+    this.y = y;
+    this.size = size;
+    this.onClick = onClick;
+
+    this.baseColor = color(c1, c2, c3);
+    this.hoverColor = color(c1 * 0.8, c2 * 0.8, c3 * 0.8);
+
+    this.CanDraw_ = canDraw;
+    this.makeInvis_ = makeInvisible;
+  }
+
+  CanDraw()  { this.CanDraw_ = true;  }
+  NotDraw()  { this.CanDraw_ = false; }
+
+  isMouseInBounds(mx, my) {
+    const m = mx != null && my != null ? { x: mx, y: my } : VM.mouse();
+    return (
+      m.x >= this.x &&
+      m.x <= this.x + this.size &&
+      m.y >= this.y &&
+      m.y <= this.y + this.size
+    );
+  }
+
+  update(dt) {}
+
+  draw() {
+    if (!this.CanDraw_ || this.makeInvis_) return;
+
+    const u = VM.u();
+    const v = VM.v();
+
+    const c = this.isMouseInBounds() ? this.hoverColor : this.baseColor;
+
+    noStroke();
+    fill(c);
+    rect(this.x * u, this.y * v, this.size * u, this.size * v, 0.5 * u);
+  }
+
+  mousePressed(p) {
+    if (this.isMouseInBounds(p?.x, p?.y) && this.CanDraw_) {
+      this.onClick(this);
+    }
+  }
+}
+// Bare Bones Label Class
+class Label {
+  constructor(x, y, text) {
+    this.x = x;
+    this.y = y;
+    this.text = text;
+  }
+
+  setText(newText) {
+    this.text = newText;
+  }
+
+  draw() {
+    textSize(24);
+    fill(220);
+    text(this.text, this.x, this.y);
+  }
+}
+
+class CountdownLabel extends Label {
+    constructor(x, y, time, onEnd = () => {}) {
+        super(x, y, time);
+        this.timer = new Timer(time * 1000);
+        this.stopped = false;
+        this.onEnd = onEnd;
+    }
+
+    update(dt){
+        if(!this.stopped && !this.timer.isFinished()) {
+            super.setText(this.timer.getSeconds());
+        } else {
+            this.onEnd(this);
+        }
+    }
+
+    stop() {
+        this.stopped = true;
+    }
+}class DisplayText{
+    /*
+    General class for displaying simple, non-clickable text on the screen.
+
+    For now aligns x,y to be upper left corner of text
+    */
+    constructor(x, y, content, size){
+        this.x = x
+        this.y = y
+        this.content = content
+        this.size = size
+
+        this.alpha = 255
+    }
+
+    draw(){
+        const u = VM.u();
+        const v = VM.v();
+
+        push()
+        noStroke()
+        textSize(this.size*(u/100))
+        textAlign(LEFT, TOP)
+        
+        // --- temporary bit for visibility - NOT PART OF ACTUAL DISPLAYTEXT CLASS
+        let w = textWidth(this.content);
+        let h = textAscent() + textDescent();
+        fill(122, 122, 102, 90)
+        rect(this.x*u-10, this.y*v-10, w+20, h+20, 8)
+
+        // ---
+        fill(222, 222, 222, this.alpha)
+        text(this.content, this.x*u, this.y*v)
+        pop()
+    }
+
+    // setters and getters
+    setAlpha(alpha){ this.alpha = alpha }
+    getAlpha(){ return this.alpha }
+    setY(newY){ this.y = newY}
+    getY(){ return this.y}
+}
+
+class TextNotificationHandler {
+    /**
+     * Class for handling fading notifications.
+     * 
+     * Can handle any number of text notifications on screen, maintains timers to fade each indiviudally.
+     * 
+     * Also for now, the view that uses this class must call TextNotificationHandler.update(dt) in its update.
+     * 
+     * cleanup() must be called in the onExit of the view to remove all notifications.
+     * 
+     * @param {Number} x - x coordinate to place text
+     * @param {Number} y - y coordinate to place text
+     * @param {Number} z_ind - z index
+     * @param {Number} fadeoutRate - how fast the text will fade, must be in range (0,1), lower => slower
+     */
+    constructor(x, y, zind=100, fadeoutRate=0.03){
+        this.x = x;
+        this.y = y;
+        this.z_index = zind;
+        this.fadeoutRate = fadeoutRate
+
+        this.size = 20; // just have it as constant so it's uniform across all views
+        this.alphaCutoff = 5; // remove text notif when alpha less than this value
+
+        this.holdFadeoutFor = 1; // how many seconds to hold fadeout for
+
+        // each element is an array where index: 0 is the text object, 1 is the timer for that object's fading mechanics
+        // will look something like [[textObject1, 0.3],[textObject2, 0.93],[textObject3, 3.1],...]
+        this.textContainer = []
+    }
+
+    update(dt){
+        // NOTE: if game starts lagging with text notifications this may be the culprit...
+        for(let i = 0; i < this.textContainer.length; i++){
+            this.textContainer[i][1] += dt
+            const textObj = this.textContainer[i][0]
+
+            /* Fadeout logic, expoentially decay alpha value for text. If alpha gets too low ( < this.alphaCutoff)), make text disappear (looks smoother this way) */
+            if(this.textContainer[i][1] > this.holdFadeoutFor){
+                textObj.setAlpha(textObj.getAlpha()*(1-this.fadeoutRate)) // new_alpha = old_alpha * (1-fadeout_rate)
+
+                if(textObj.getAlpha() < this.alphaCutoff){
+                    R.remove(textObj)
+                    this.textContainer.splice(i, 1) // delete from array
+                }
+            }
+        }
+    }
+
+    // add text at position specified at constructor
+    addText(text){
+        let textCount = this.textContainer.length
+
+        // push others down
+        for(let i = 0; i < textCount; i++){
+            const textObj = this.textContainer[i][0]
+            textObj.setY(this.y+(i+1)*0.6) // fixed offset for now. change later
+        }
+
+        // add to front at top
+        this.textContainer.unshift([new DisplayText(this.x, this.y, text, this.size), 0]);
+        R.add(this.textContainer[0][0], this.z_index);
+
+    }
+
+    // call this in onExit in your view.
+    cleanup() {
+        for (let i = 0; i < this.textContainer.length; i++) {
+            R.remove(this.textContainer[i][0]); // remove each stored DisplayText
+        }
+        this.textContainer = [];
+    }
+
+}let fileCabinet;
+
+function loadSprites() {
+    /**
+     * Preload your sprites as images in this function, to use them in your code, use global SM
+     * object's SM.get('name').
+     */
+
+    SM.add("FileCabinet", loadImage('assets/object/fileCabinet.webp'));
+    SM.add("NorthWall", loadImage('assets/background/pcWall.webp')); 
+    SM.add("EastWall", loadImage('assets/background/boxesWall.webp')); 
+    SM.add("SouthWall", loadImage('assets/background/billBoardWall.webp'));
+    SM.add("WestWall", loadImage('assets/background/cabinetWall.webp'));
+    SM.add("pinpad", loadImage('assets/object/keypad.webp'));
+
+    SM.add("FileCabinet1", loadImage('assets/object/fileCabinet.webp'));
+    SM.add("FileCabinet2", loadImage('assets/object/fileCabinet.webp'));
+    SM.add("FileCabinet3", loadImage('assets/object/fileCabinet.webp'));
+    SM.add("FileCabinet4", loadImage('assets/object/fileCabinet.webp'));
+
+    SM.add("secondNumber", loadImage('assets/object/secondNumber.png'));
+    SM.add("screen", loadImage('assets/object/screen.webp'));
+
+    SM.add("SlidingDoor1", loadImage('assets/object/SlidingDoor1.svg'));
+    SM.add("SlidingDoor2", loadImage('assets/object/SlidingDoor2.svg'));
+    SM.add("SlidingDoor3", loadImage('assets/object/SlidingDoor3.svg'));
+    SM.add("SlidingDoor4", loadImage('assets/object/SlidingDoor4.svg'));
+    SM.add("connectionTerminated", loadImage('assets/secrets/henry/connectionTerminated.jpg'));
+}
+
+
+
+class SpriteManager {
+    constructor() {
+        this.sprites = new Map();
+    }
+
+    add(name, img) {
+        const sprite = new Sprite(img);
+        this.sprites.set(name, sprite);
+    }
+
+    get(name) {
+        return this.sprites.get(name);
+    }
+}
+
+class Sprite {
+    constructor(src, x = 0, y = 0, scale = 1) {
+        this.src = src;
+        this.x = x;
+        this.y = y;
+        this.scale = scale / 100;
+        this.customSize = null;
+    }
+
+    clone() {
+        const copy = new Sprite(this.src);
+        copy.x = this.x;
+        copy.y = this.y;
+        copy.scale = this.scale;       // keep normalized scale (0..1)
+        copy.customSize = this.customSize ? { ...this.customSize } : null;
+        return copy;
+    }
+
+
+    setScale(scale) {
+        this.scale = scale / 100;
+        this.customSize = null;
+    }
+
+    setSize(w, h) {
+        this.customSize = { w, h};
+    }
+
+    setPos(x, y) {
+        this.x = x;
+        this.y = y; 
+    }
+
+    getNativeSize() {
+        return [this.src.width, this.src.height];
+    }
+
+    getVirtualSize() {
+        const u = VM.u();
+        const v = VM.v();
+        const dpr = pixelDensity(); // or window.devicePixelRatio
+        return [
+            (this.src.width / dpr) * this.scale / u,
+            (this.src.height / dpr) * this.scale / v
+        ];
+    }
+
+    draw() {
+        const u = VM.u();
+        const v = VM.v();
+
+        let w, h
+        if (this.customSize) {
+            w = this.customSize.w * u;
+            h = this.customSize.h * v;
+        } else {
+            w = this.src.width * this.scale * u;
+            h = this.src.height * this.scale * v;
+        }
+
+        push();
+        image(this.src, this.x * u, this.y * v, w, h )
+        pop();
+    }
+
+    update(dt) {
+
+    }
+}/**
+ * VM (Virtual Metrics)
+ * 16:9 unit helpers shared by all views/UI.
+ * - Units: 16 wide (x), 9 tall (y)
+ * - VM.U / VM.V = pixels per unit (computed from p5 width/height)
+ * - Do NOT import anything; this attaches VM to window.
+ */
+
+(function attachVM(global) {
+  const VM = {
+    // pixels-per-unit (updated after canvas size changes)
+    U: 0,
+    V: 0,
+
+    // Recompute U/V from the current p5 canvas size.
+    updateUnits() {
+      if (typeof width !== "number" || typeof height !== "number") {
+        this.U = 0;
+        this.V = 0;
+        return;
+      }
+      this.U = width / 16;
+      this.V = height / 9;
+    },
+
+    // Convenience getters (keeps older code working).
+    u() { return this.U; },
+    v() { return this.V; },
+
+    // Convert 16:9 units <-> screen pixels.
+    toScreen(x, y) {
+      return { x: x * this.U, y: y * this.V };
+    },
+    toVirtual(px, py) {
+      return { x: px / this.U, y: py / this.V };
+    },
+
+    // Mouse in 16:9 units (updated each frame from p5 mouseX/Y).
+    _mouse: { x: 0, y: 0 },
+    mouse() { return this._mouse; },
+
+    updateMouseFromP5() {
+      if (typeof mouseX !== "number" || this.U === 0 || this.V === 0) return;
+      this._mouse = this.toVirtual(mouseX, mouseY);
+    },
+
+    // Utility: is a point (in 16:9 units) inside the canvas area?
+    insideUnits(p) {
+      return p && p.x >= 0 && p.y >= 0 && p.x <= 16 && p.y <= 9;
+    }
+  };
+
+  global.VM = VM;
+})(window);
+class Sprite2D {
+  constructor(src, x = 0, y = 0, options = {}) {
+    this.x = x;
+    this.y = y;
+
+    this.scale = options.scale ?? 1;
+    this.rotation = options.rotation ?? 0;
+    this.visible = true;
+
+    this.img = null;        // p5.Image
+    this.ready = false;
+
+    this.wUnits = options.width ?? null;   // width in units (if null, use native px)
+    this.hUnits = options.height ?? null;  // height in units (if null, use native px)
+
+    const onReady = (img) => {
+      this.img = img;
+      this.ready = true;
+    };
+
+    if (typeof src === 'object' && typeof src.width === 'number') {
+      onReady(src);
+    } else if (typeof src === 'string') {
+      loadImage(src, onReady, err => console.error('Sprite2D load failed:', src, err));
+    } else {
+      console.error('Sprite2D: src must be a path string or a p5.Image');
+    }
+  }
+
+  update(dt) {}
+
+  draw() {
+    if (!this.visible || !this.ready || !this.img) return;
+
+    const u = VM.u();
+    const v = VM.v();
+
+    const wpx = (this.wUnits != null) ? this.wUnits * u : this.img.width;
+    const hpx = (this.hUnits != null) ? this.hUnits * v : this.img.height;
+
+    push();
+    translate(this.x * u, this.y * v);
+    rotate(this.rotation);
+    scale(this.scale);
+    image(this.img, 0, 0, wpx, hpx);
+    pop();
+  }
+}
+
+window.Sprite2D = Sprite2D;
+class Renderer {
+    /**
+     * Access this via the global R object in your views/objects. 
+     * For explanation and help see DOCUMENTATION.md in the root directory of the project.
+     */
+    constructor() {
+        // layers: map of layer index -> array of objects
+        this.layers = new Map();
+
+        // objects queued to delete
+        this._toRemove = new Set();
+    }
+
+    // gets (or creates) array for a layer
+    _getLayer(z = 0) {
+        if (!this.layers.has(z)) this.layers.set(z, []);
+        return this.layers.get(z);
+    }
+
+    // adds an object to a specific layer (default 0)
+    add(obj, z = 0) {
+        obj.__layer = z;
+        this._getLayer(z).push(obj);
+        return obj;
+    }
+
+    // removes an object immediately
+    remove(obj) {
+        this._toRemove.add(obj);
+        this._deleteObjects();
+    }
+
+    // safely self removes
+    selfRemove(obj) {
+        this._toRemove.add(obj);
+    }
+
+    // checks if there’s anything to delete and deletes them
+    _deleteObjects() {
+        if (this._toRemove.size === 0) 
+            return;
+        for (const [z, arr] of this.layers) {
+            this.layers.set(z, arr.filter(o => !this._toRemove.has(o)));
+        }
+        this._toRemove.clear();
+    }
+
+    update(dt) {
+        // updates each object in ascending layer order
+        for (const z of [...this.layers.keys()].sort((a,b)=>a-b)) {
+            for (const o of this.layers.get(z)) {
+                if (typeof o.update === "function") o.update(dt);
+            }
+        }
+        // deletes objects on update
+        this._deleteObjects();
+    }
+
+    draw() {
+        // draws each object in ascending layer order
+        for (const z of [...this.layers.keys()].sort((a,b)=>a-b)) {
+            for (const o of this.layers.get(z)) {
+                if (typeof o.draw === "function") o.draw();
+            }
+        }
+    }
+
+    // used for capturing mousePresses or Keyboard Events
+    dispatch(methodName, ...args) {
+        for (const z of [...this.layers.keys()].sort((a, b) => b - a)) {
+            for (const o of this.layers.get(z)) {
+                const fn = o[methodName];
+                if (typeof fn === "function") {
+                    const handled = fn.apply(o, args);
+                    if (handled) {            // ⬅️ stop once someone handled it
+                        this._deleteObjects();
+                        return;
+                    }
+                }
+            }
+        }
+        this._deleteObjects();
+    }
+
+
+    // clears everything in the renderer
+    clear() {
+        this.layers.clear();
+        this._toRemove.clear();
+    }
+}
+let cnv;
+let R;
+let SM = new SpriteManager(); // Sprite Manager
+let GS = new GameState();
+let WORLD;
+
+let ended = false;
+
+// Interface state tracking
+let activeInterface = null; // tracks if Terminal, Pinpad, or other interface is active
+
+// Views and game elements
+let startScreen;
+let room;
+
+// Assets
+let gameFont;
+let terminusFont;
+let startScreenMusic;
+let henryAudio;
+let henryImage;
+let screenTimer;
+
+function fit16x9() {
+  const k = Math.min(windowWidth / 16, windowHeight / 9);
+  const W = Math.floor(16 * k);
+  const H = Math.floor(9 * k);
+
+  if (!cnv) {
+    cnv = createCanvas(W, H);
+  } else {
+    resizeCanvas(W, H);
+  }
+
+  // Center canvas
+  const x = Math.floor((windowWidth - W) / 2);
+  const y = Math.floor((windowHeight - H) / 2);
+  cnv.position(x, y);
+}
+
+function preload() {
+  loadSprites();
+
+  gameFont     = loadFont('assets/font/PressStart2P-Regular.ttf');
+  terminusFont = loadFont('assets/font/terminus.ttf');
+
+  // Load start screen music
+  startScreenMusic = loadSound('assets/Is_Anybody_There.mp3');
+  
+  // Load henry password sequence assets
+  henryAudio = loadSound('assets/secrets/henry/connectionTerminated.mp3');
+  henryImage = loadImage('assets/secrets/henry/connectionTerminated.jpg');
+}
+
+function setup() {
+  fit16x9();
+  VM.updateUnits(); // compute VM.U / VM.V now that width/height exist
+
+  R = new Renderer();
+
+  startScreen = new StartScreenView(() => {
+    if (startScreenMusic && startScreenMusic.isPlaying()) startScreenMusic.stop();
+    R.selfRemove(startScreen);
+
+    screenTimer = new ScreenTimer(() => { });
+    R.add(screenTimer, 1);
+
+    setupWorld(); // ⬅️ new
+  });
+
+
+  // High z so it draws on top until removed
+  R.add(startScreen, 999);
+}
+
+function draw() {
+  // Keep VM in sync each frame (handles window resizes, etc.)
+  VM.updateUnits();
+  VM.updateMouseFromP5();
+
+  background(20);
+
+  const dt = deltaTime / 1000;
+  if(!ended) {
+    endScreen = new EndScreenView(GS.getSolved()); //update endscreen state
+  }
+
+  if(GS.getSolved() || GS.getTimer()) {
+    ended = true;
+    R.add(endScreen, 999);
+  }
+  R.update(dt);
+  R.draw();
+}
+
+function windowResized() {
+  fit16x9();
+  VM.updateUnits();
+}
+
+function mousePressed() {
+  // Dispatch mouse in 16:9 unit space
+  const m = VM.mouse();
+  if (!VM.insideUnits(m)) return;
+  // console.log(m.x, m.y);
+  if (R) R.dispatch('mousePressed', m);
+}
+
+function mouseReleased() {
+  if (R) R.dispatch('mouseReleased');
+}
+
+function keyPressed() {
+  if (R) R.dispatch('keyPressed');
+}
+
+function setupWorld() {
+  WORLD = new WorldManager();
+
+  // --- Room A (start here) ---
+  const computerView = new ComputerView(); // start view (index 0)
+  const boxesView    = new BoxesView();
+  const billboard    = new BillboardView();
+  const fcView       = new FileCabinetView();
+
+  // Door in Room A -> Room B (index 1), land on view 0
+  const sdViewA = new SlidingDoorView([{
+    x:12, y:2.5, scale:0.8,
+    targetRoom: 1,        // <-- ROOM B
+    targetViewIndex: 0    // land on first plain color view
+  }]);
+
+  const roomA = new ViewManager();
+  roomA.addView(computerView);  // index 0 (start)
+  roomA.addView(boxesView);
+  roomA.addView(billboard);
+  roomA.addView(fcView);
+  roomA.addView(sdViewA);
+  sdViewA.setRoom?.(roomA);
+
+  // --- Room B (plain colors + label) ---
+  class PlainView extends View { constructor(r,g,b,label){ super(r,g,b,label); } }
+
+  const redView   = new PlainView(200, 40, 40,   'Room B - RED');
+  const greenView = new PlainView(40, 160, 60,   'Room B - GREEN');
+  const blueView  = new PlainView(50, 90, 200,   'Room B - BLUE');
+  const grayView  = new PlainView(60, 60, 60,    'Room B - GRAY');
+
+  // Door in Room B -> back to Room A (index 0), land on computerView (view 0)
+  const sdViewB = new SlidingDoorView([{
+    x:12, y:2.5, scale:0.8,
+    targetRoom: 0,        // <-- back to ROOM A
+    targetViewIndex: 0
+  }]);
+
+  const roomB = new ViewManager();
+  roomB.addView(redView);
+  roomB.addView(greenView);
+  roomB.addView(blueView);
+  roomB.addView(grayView);
+  roomB.addView(sdViewB);
+  sdViewB.setRoom?.(roomB);
+
+  // register rooms (A=0, B=1) and let WORLD receive key events
+  WORLD.addRoom(roomA);   // index 0
+  WORLD.addRoom(roomB);   // index 1
+  R.add(WORLD, 1000);
+}
+
+
+
+// function setupRoom() {
+//   // Create the view instances
+//   let computerView = new ComputerView();        // North wall (pcWall.webp) - starting view
+//   let boxesView = new BoxesView();              // East wall (boxesWall.webp) - right from start
+//   let billboardView = new BillboardView();      // South wall (billBoardWall.webp) - left from start  
+//   let fcView = new FileCabinetView();           // West wall (cabinetWall.webp) - behind start
+//   let sdView = new SlidingDoorView([{
+//     x:12, 
+//     y:2.5,
+//     scale:0.8, 
+//     targetView: fcView
+//   }]); 
+
+//   room = new ViewManager();
+//   // Add views in navigation order: North -> East -> South -> West
+//   room.addView(computerView);    // 0: North (start here) - pcWall
+//   room.addView(boxesView);       // 1: East (right arrow) - boxesWall  
+//   room.addView(billboardView);   // 2: South (continue right) - billBoardWall
+//   room.addView(fcView);          // 3: West (continue right, left from start) - cabinetWall
+//   room.addView(sdView);
+
+//   R.add(room);
+// }

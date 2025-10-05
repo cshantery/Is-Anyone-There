@@ -7,15 +7,18 @@ const doorClickHeight = 6;
 const frameDuration = 0.1; 
 
 class SlidingDoor {
-    constructor(x, y, scale, onClick = () => {}, targetView = null) {
+    constructor(x, y, scale, onClick = () => { }, cfg = {}) {
         this.x = x;
         this.y = y;
         this.scale = scale;
         this.onClick = onClick;
-        this.targetView = targetView; 
+
+        // clickable highlight
         this.highlight = new HighlightEvent(this.x, this.y, doorWidth, doorHeight);
 
-
+        this.targetView = cfg.targetView ?? null;       
+        this.targetRoom = cfg.targetRoom ?? null;       
+        this.targetViewIndex = cfg.targetViewIndex ?? 0;
 
         // loading frames of sliding door
         this.frames = [
@@ -42,22 +45,28 @@ class SlidingDoor {
     }
 
     mousePressed(p) {
-        // kind of combined isMouseInBounds with mousePressed
         const m = p || VM.mouse();
-        if (m.x >= this.x  && m.x <= this.x + doorClickWidth &&
-            m.y >= this.y  && m.y <= this.y + doorClickHeight &&
+        const hit = (
+            m.x >= this.x && m.x <= this.x + doorClickWidth &&
+            m.y >= this.y && m.y <= this.y + doorClickHeight &&
             !this.animating
-        ) {
-            this.toggle();
+        );
+        if (!hit) return false;
 
-            if(this.targetView){
-                setTimeout(() => {
-                    room.Views = [this.targetView]; 
-                    room._currentView = 0; 
-                    room.gotoView(this.targetView);
-                }, 450); 
+        this.toggle();
+
+        // always schedule jump after the open animation delay
+        setTimeout(() => {
+            if (this.targetView) {
+                if (this._room && typeof this._room.gotoView === 'function') {
+                    this._room.gotoView(this.targetView);
+                }
+            } else if (this.targetRoom != null && typeof WORLD?.gotoRoom === 'function') {
+                WORLD.gotoRoom(this.targetRoom, this.targetViewIndex);
             }
-        }
+        }, 450);
+
+        return true; // consume the click
     }
 
     // switching between open and closed 
@@ -89,6 +98,10 @@ class SlidingDoor {
         }
     }
 
+    setRoom(vm) { 
+        this._room = vm; 
+    }
+
     draw() {
         this.frames[this.currentFrame].draw();
     }
@@ -118,13 +131,15 @@ class SlidingDoorView extends View {
         this.background = backgroundAsset ?? SM.get("SouthWall");
         this.background.setSize(16, 9); 
 
+        // FIX: pass the entire config as cfg
         this.door = slidingDoors.map(config => new SlidingDoor(
             config.x,
-            config.y, 
-            config.scale, 
-            config.onClick ?? (() => {}),
-            config.targetView ?? null 
+            config.y,
+            config.scale,
+            config.onClick ?? (() => { }),
+            config
         ));
+
         }
 
     update(dt) {
@@ -148,7 +163,14 @@ class SlidingDoorView extends View {
     }
 
     mousePressed(p) {
-        this.door.forEach(door => door.mousePressed(p));
+        for (const door of this.door) {
+            if (door.mousePressed(p)) return true; // stop propagation
+        }
+        return false;
+    }
+
+    setRoom(vm) {
+        this.door.forEach(d => d.setRoom(vm));
     }
 }
 
