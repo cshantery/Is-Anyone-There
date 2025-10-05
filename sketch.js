@@ -166,29 +166,3 @@ function setupWorld() {
   WORLD.addRoom(roomB);   // index 1
   R.add(WORLD, 1000);
 }
-
-
-
-// function setupRoom() {
-//   // Create the view instances
-//   let computerView = new ComputerView();        // North wall (pcWall.webp) - starting view
-//   let boxesView = new BoxesView();              // East wall (boxesWall.webp) - right from start
-//   let billboardView = new BillboardView();      // South wall (billBoardWall.webp) - left from start  
-//   let fcView = new FileCabinetView();           // West wall (cabinetWall.webp) - behind start
-//   let sdView = new SlidingDoorView([{
-//     x:12, 
-//     y:2.5,
-//     scale:0.8, 
-//     targetView: fcView
-//   }]); 
-
-//   room = new ViewManager();
-//   // Add views in navigation order: North -> East -> South -> West
-//   room.addView(computerView);    // 0: North (start here) - pcWall
-//   room.addView(boxesView);       // 1: East (right arrow) - boxesWall  
-//   room.addView(billboardView);   // 2: South (continue right) - billBoardWall
-//   room.addView(fcView);          // 3: West (continue right, left from start) - cabinetWall
-//   room.addView(sdView);
-
-//   R.add(room);
-// }
