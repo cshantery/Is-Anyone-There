@@ -123,7 +123,9 @@ class HenryPasswordSequence {
   }
   
   keyPressed() {
+    console.log('HenryPasswordSequence.keyPressed:', key, keyCode);
     if (keyCode === ESCAPE || key === 'Escape') {
+      console.log('ESC detected, restarting game');
       this.restartGame();
       return true; // Event handled
     }
