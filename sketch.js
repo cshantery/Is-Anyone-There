@@ -114,13 +114,13 @@ function keyPressed() {
   if (R) R.dispatch('keyPressed');
 }
 
+
 function setupWorld() {
   WORLD = new WorldManager();
 
   // --- Room A (start here) ---
   const computerView = new ComputerView(); // start view (index 0)
   const boxesView    = new BoxesView();
-  const billboard    = new BillboardView();
   const fcView       = new FileCabinetView();
 
   // Door in Room A -> Room B (index 1), land on view 0
@@ -133,7 +133,6 @@ function setupWorld() {
   const roomA = new ViewManager();
   roomA.addView(computerView);  // index 0 (start)
   roomA.addView(boxesView);
-  roomA.addView(billboard);
   roomA.addView(fcView);
   roomA.addView(sdViewA);
   sdViewA.setRoom?.(roomA);
@@ -146,25 +145,52 @@ function setupWorld() {
   //const redView   = new PlainView(200, 40, 40,   'Room B - RED');
   const greenView = new PlainView(40, 160, 60,   'Room B - GREEN');
   const blueView  = new PlainView(50, 90, 200,   'Room B - BLUE');
-  const grayView  = new PlainView(60, 60, 60,    'Room B - GRAY');
 
   // Door in Room B -> back to Room A (index 0), land on computerView (view 0)
   const sdViewB = new SlidingDoorView([{
     x:12, y:2.5, scale:0.8,
-    targetRoom: 0,        // <-- back to ROOM A
+    targetRoom: 2,        // <-- to room c
     targetViewIndex: 0
-  }]);
+  }],SM.get("placeholderWall"));
 
   const roomB = new ViewManager();
   roomB.addView(redView);
   roomB.addView(greenView);
   roomB.addView(blueView);
-  roomB.addView(grayView);
   roomB.addView(sdViewB);
   sdViewB.setRoom?.(roomB);
 
-  // register rooms (A=0, B=1) and let WORLD receive key events
+
+    // --- Room C (start here) ---
+  const northWall = new NorthWall; // start view (index 0)
+  const eastWall  = new EastWall();
+  const breakerWall  = new BreakerBoxView([{
+    x: 6,
+    y: 3,
+    onTransition: () => {
+      // This is the function that launches the puzzle
+      if (window.activeInterface) return;
+      R.add(new WirePuzzle(() => {}));
+    }
+  }], SM.get("placeholderWall"));
+
+  // Door in Room C -> Room A (index 0), land on view 0
+  const sdViewC = new SlidingDoorView([{
+    x:12, y:2.5, scale:0.8,
+    targetRoom: 0,        // <-- ROOM A
+    targetViewIndex: 0    // land on computerview
+  }], SM.get("placeholderWall"));
+
+  const roomC = new ViewManager();
+  roomC.addView(northWall);  // index 0 (start)
+  roomC.addView(eastWall);
+  roomC.addView(breakerWall);
+  roomC.addView(sdViewC);
+  sdViewC.setRoom?.(roomC);
+
+  // register rooms (A=0, B=1, C=2) and let WORLD receive key events
   WORLD.addRoom(roomA);   // index 0
   WORLD.addRoom(roomB);   // index 1
+  WORLD.addRoom(roomC);
   R.add(WORLD, 1000);
 }
