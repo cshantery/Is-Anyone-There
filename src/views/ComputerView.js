@@ -87,13 +87,18 @@ class Terminal {
   update(dt) {}
 
   keyPressed() {
+    // Ensure this terminal is the active interface
+    if (window.activeInterface !== 'Terminal') {
+      return false; // Don't handle the event
+    }
+
     // Arrow keys exit the terminal
     if (keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {
       R.selfRemove(this._closeBtn);
       R.remove(this);
       window.activeInterface = null; // Clear active interface flag
       this.onExit();
-      return;
+      return true; // Event handled
     }
 
     // Submit
@@ -108,7 +113,7 @@ class Terminal {
           R.remove(this);
           window.activeInterface = null;
           this.onExit();
-          return;
+          return true; // Event handled
         } else {
           // Invalid password, show error
           this.history.push(this.input);
@@ -122,24 +127,35 @@ class Terminal {
       // keep history bounded
       if (this.history.length > 200) this.history.shift();
       this.input = "";
-      return;
+      return true; // Event handled
     }
 
     // Backspace
     if (keyCode === BACKSPACE) {
       this.input = this.input.slice(0, -1);
-      return;
+      return true; // Event handled
     }
 
     // Accept only ASCII
     if (typeof key === "string" && /^[\x20-\x7E]$/.test(key)) {
       this.input += key;
+      return true; // Event handled
     }
+
+    // If we get here, the key wasn't handled
+    return false;
   }
 
   // Clean up if you ever remove it externally
   onRemove() {
+    window.activeInterface = null; // Ensure interface state is cleared
     R.remove(this._closeBtn);
+  }
+
+  // Method to force reset the terminal state
+  static resetInterface() {
+    console.log("Resetting terminal interface state");
+    window.activeInterface = null;
   }
 }
 
@@ -269,6 +285,11 @@ class Pinpad {
     }
 
     keyPressed() {
+        // Ensure this pinpad is the active interface
+        if (window.activeInterface !== 'Pinpad') {
+            return false; // Don't handle the event
+        }
+
         // Arrow keys exit the pinpad
         if (keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {
             // Clean up pinpad interface first
@@ -281,13 +302,14 @@ class Pinpad {
             // Clear active interface flag and call onExit callback
             window.activeInterface = null;
             this.onExit();
-            return;
+            return true; // Event handled
         }
 
-        if (this.isProcessing) return; // Prevent input during processing
+        if (this.isProcessing) return false; // Prevent input during processing
         
         if (keyCode === BACKSPACE) {
             this.label = this.label.slice(0, -1);
+            return true; // Event handled
         } else if (this.label.length < 3 && /^[0-9]$/.test(key)) {
             this.label += key;
             if (this.label.length === 3) {
@@ -299,9 +321,15 @@ class Pinpad {
                     this.label = '';
                     this.feedbackColor = null;
                     this.isProcessing = false;
+                    if(isCorrect) {
+                        GS.Solved();
+                    }
                 }, 500);
             }
+            return true; // Event handled
         }
+
+        return false; // Event not handled
     }
 
 }

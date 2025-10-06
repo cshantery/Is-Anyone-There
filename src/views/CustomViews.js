@@ -36,7 +36,11 @@ class TimerView extends View {
   }
 
   keyPressed() {
-    if (keyCode === 32) this.timer.reset();
+    if (keyCode === 32) {
+      this.timer.reset();
+      return true; // Event handled
+    }
+    return false; // Event not handled
   }
 }
 

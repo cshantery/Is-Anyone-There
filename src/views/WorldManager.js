@@ -5,12 +5,13 @@ class WorldManager {
     }
 
     keyPressed() {
-        if (window.activeInterface) return true; // block when a modal is open
+        if (window.activeInterface) return false; // Don't block when a modal is open - let the interface handle it
         const room = this.activeRoom;
         if (room && typeof room.keyPressed === 'function') {
             room.keyPressed();
             return true; // consume
         }
+        return false; // Don't consume if no room handled it
     }
 
     addRoom(vm) {

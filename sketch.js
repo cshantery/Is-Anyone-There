@@ -114,6 +114,27 @@ function keyPressed() {
   if (R) R.dispatch('keyPressed');
 }
 
+// Debug function to check and reset interface state
+function debugInterface() {
+  console.log("=== Interface Debug Info ===");
+  console.log("window.activeInterface:", window.activeInterface);
+  console.log("global activeInterface:", activeInterface);
+  console.log("Renderer objects count:", R ? R.objects.length : "No renderer");
+  return {
+    windowActive: window.activeInterface,
+    globalActive: activeInterface,
+    rendererCount: R ? R.objects.length : 0
+  };
+}
+
+// Function to force reset interface state
+function resetInterface() {
+  console.log("Forcing interface reset");
+  window.activeInterface = null;
+  activeInterface = null;
+  console.log("Interface reset complete");
+}
+
 
 function setupWorld() {
   WORLD = new WorldManager();

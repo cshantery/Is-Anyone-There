@@ -125,7 +125,9 @@ class HenryPasswordSequence {
   keyPressed() {
     if (keyCode === ESCAPE || key === 'Escape') {
       this.restartGame();
+      return true; // Event handled
     }
+    return false; // Event not handled
   }
   
   restartGame() {

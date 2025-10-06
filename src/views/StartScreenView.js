@@ -162,6 +162,12 @@ class EndScreenView extends View {
     this.textColor = this.solved ? 'green' : 'red';
     this.instruction = this.solved ? 'You Have Won!' : 'Sorry, you Died...';
 
+    // Button in 16:9 units (centered horizontally)
+    this.btnW = 2.8;
+    this.btnH = 0.9;
+    this.btnX = 8 - this.btnW / 2;
+    this.btnY = 6.5;
+
     // Star field in units
     this.stars = Array.from({ length: 200 }, () => ({
       x: random(16),
@@ -225,6 +231,38 @@ class EndScreenView extends View {
     }
   }
 
+  drawButton() {
+    const u = VM.u();
+    const v = VM.v();
+
+    const m = VM.mouse();
+    const hover =
+      m.x >= this.btnX &&
+      m.x <= this.btnX + this.btnW &&
+      m.y >= this.btnY &&
+      m.y <= this.btnY + this.btnH;
+
+    if (hover) {
+      fill(100, 150, 255, 200);
+      stroke(150, 200, 255, 150);
+      strokeWeight(0.08 * u);
+    } else {
+      fill(50, 100, 200, 200);
+      noStroke();
+    }
+
+    rect(this.btnX * u, this.btnY * v, this.btnW * u, this.btnH * v, 0.5 * u);
+
+    fill(255);
+    noStroke();
+    textAlign(CENTER, CENTER);
+    textFont(gameFont);
+    textSize(0.25 * v);
+    const cx = (this.btnX + this.btnW / 2) * u;
+    const cy = (this.btnY + this.btnH / 2) * v;
+    text('Restart', Math.round(cx), Math.round(cy));
+  }
+
   draw() {
     background(0, 0, 0);
 
@@ -248,5 +286,28 @@ class EndScreenView extends View {
     textSize(0.3 * v);
     text(this.instruction, 8 * u, 4.6 * v);
 
+    this.drawButton();
+
+  }
+
+  mousePressed(p) {
+    const hit =
+      p.x >= this.btnX &&
+      p.x <= this.btnX + this.btnW &&
+      p.y >= this.btnY &&
+      p.y <= this.btnY + this.btnH;
+
+    if (hit) {
+      this.restartGame();
+    }
+  }
+
+  restartGame() {
+    // Clear any active interfaces
+    window.activeInterface = null;
+    
+    // Restart the game by reloading the page
+    // This is the simplest way to ensure a clean restart
+    location.reload();
   }
 }

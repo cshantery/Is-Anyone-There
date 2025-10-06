@@ -46,18 +46,22 @@ class ViewManager {
   }
 
   keyPressed() {
-    if (window.activeInterface) return;
+    if (window.activeInterface) return false; // Don't handle when interface is active
 
     const current = this.Views[this._currentView];
     if (keyCode === LEFT_ARROW) {
       R.remove(current); current.onExit?.();
       this._currentView = (this._currentView - 1 + this.Views.length) % this.Views.length;
       const next = this.Views[this._currentView]; R.add(next); next.onEnter?.();
+      return true; // Event handled
     } else if (keyCode === RIGHT_ARROW) {
       R.remove(current); current.onExit?.();
       this._currentView = (this._currentView + 1) % this.Views.length;
       const next = this.Views[this._currentView]; R.add(next); next.onEnter?.();
+      return true; // Event handled
     }
+    
+    return false; // Event not handled
   }
 
   gotoView(viewInstance){

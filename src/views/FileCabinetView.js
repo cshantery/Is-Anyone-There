@@ -82,7 +82,7 @@ class OpenCabinetUI {
   update(dt) {}
 
   keyPressed() {
-
+    return false; // Event not handled
   }
 
   /* The following two member functions just for removing what's on the UI. Call add before adding OpenCabinetUI to R
