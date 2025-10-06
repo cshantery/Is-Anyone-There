@@ -141,7 +141,9 @@ function setupWorld() {
   // --- Room B (plain colors + label) ---
   class PlainView extends View { constructor(r,g,b,label){ super(r,g,b,label); } }
 
-  const redView   = new PlainView(200, 40, 40,   'Room B - RED');
+
+  const redView = new SpaceWindowView();
+  //const redView   = new PlainView(200, 40, 40,   'Room B - RED');
   const greenView = new PlainView(40, 160, 60,   'Room B - GREEN');
   const blueView  = new PlainView(50, 90, 200,   'Room B - BLUE');
   const grayView  = new PlainView(60, 60, 60,    'Room B - GRAY');
