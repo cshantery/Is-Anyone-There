@@ -89,6 +89,12 @@ class GameState {
   constructor() {
     this.timerUp = false;
     this.solved = false;
+
+    this.deaths = 2;
+  }
+
+  getDeaths() {
+    return this.deaths;
   }
 
   TimerDone() {

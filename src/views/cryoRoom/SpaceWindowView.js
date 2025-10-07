@@ -9,8 +9,8 @@ class SpaceWindow{
         this.scale = scale;
 
         // for hitbox, I just manually guessed, we need a good method to calculate these
-        this.width = 6.13
-        this.height = 4.1
+        this.width = 9.3
+        this.height = 6.1
 
         this.background = SM.get(img);
         this.background.setPos(this.x, this.y);
@@ -21,7 +21,7 @@ class SpaceWindow{
         // this.highlight = new HighlightEvent(this.x, this.y, this.width, this.height);
 
         // for window, temporary
-        this.borderSize = 0.15;
+        this.borderSize = 0.2;
     }
 
     draw(){
@@ -69,7 +69,7 @@ class SpaceWindowView extends View{
      */
     constructor() {
         super(0,0,0,'');
-        this.background = SM.get("placeholderWall");
+        this.background = SM.get("MetalWall");
         this.background.setSize(16, 9);
         
         // min and max delay (in seconds) for the next random message to popup
@@ -97,7 +97,7 @@ class SpaceWindowView extends View{
         //     this.textNotif.addText('You quietly stare into the emptiness of space, then ask yourself: "Is anyone there?"')
         // })
         
-        this.wind = new SpaceWindow(5, 1.5, 0.4, 'placeholderWindow', (obj) => {})
+        this.wind = new SpaceWindow(3, 1, 0.6, 'placeholderWindow', (obj) => {})
     }
 
     // get a random time in seconds

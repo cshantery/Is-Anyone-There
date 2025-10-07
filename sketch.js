@@ -159,25 +159,29 @@ function setupWorld() {
   sdViewA.setRoom?.(roomA);
 
   // --- Room B (plain colors + label) ---
-  class PlainView extends View { constructor(r,g,b,label){ super(r,g,b,label); } }
+  //class PlainView extends View { constructor(r,g,b,label){ super(r,g,b,label); } }
 
 
   const redView = new SpaceWindowView();
   //const redView   = new PlainView(200, 40, 40,   'Room B - RED');
-  const greenView = new PlainView(40, 160, 60,   'Room B - GREEN');
-  const blueView  = new PlainView(50, 90, 200,   'Room B - BLUE');
+  const cryoView1 = new CryoView(0);
+  const cryoView2 = new CryoView(1);
+  const cryoView3 = new CryoView(2);
+  const cryoView4 = new CryoView(3);
 
   // Door in Room B -> back to Room A (index 0), land on computerView (view 0)
   const sdViewB = new SlidingDoorView([{
-    x:12, y:2.5, scale:0.8,
-    targetRoom: 2,        // <-- to room c
+    x:12, y:2, scale:1,
+    targetRoom: 0,        // <-- to room c
     targetViewIndex: 0
-  }],SM.get("placeholderWall"));
+  }],SM.get("MetalWall"));
 
   const roomB = new ViewManager();
+  roomB.addView(cryoView1);
+  roomB.addView(cryoView2);
   roomB.addView(redView);
-  roomB.addView(greenView);
-  roomB.addView(blueView);
+  roomB.addView(cryoView3);
+  roomB.addView(cryoView4);
   roomB.addView(sdViewB);
   sdViewB.setRoom?.(roomB);
 
