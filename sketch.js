@@ -85,8 +85,11 @@ function draw() {
     endScreen = new EndScreenView(GS.getSolved()); //update endscreen state
   }
 
-  if(GS.getSolved() || GS.getTimer()) {
+  if(GS.isEnded()) {
     ended = true;
+    if(!GS.getSolved()) {
+      GS.incrementDeaths();
+    }
     R.add(endScreen, 999);
   }
   R.update(dt);
@@ -147,7 +150,7 @@ function setupWorld() {
   // Door in Room A -> Room B (index 1), land on view 0
   const sdViewA = new SlidingDoorView([{
     x:12, y:2.5, scale:0.8,
-    targetRoom: 1,        // <-- ROOM B
+    targetRoom: 1,         // <-- ROOM B
     targetViewIndex: 0    // land on first plain color view
   }]);
 
@@ -162,7 +165,7 @@ function setupWorld() {
   //class PlainView extends View { constructor(r,g,b,label){ super(r,g,b,label); } }
 
 
-  const redView = new SpaceWindowView();
+  const windowView = new SpaceWindowView();
   //const redView   = new PlainView(200, 40, 40,   'Room B - RED');
   const cryoView1 = new CryoView(0);
   const cryoView2 = new CryoView(1);
@@ -179,7 +182,7 @@ function setupWorld() {
   const roomB = new ViewManager();
   roomB.addView(cryoView1);
   roomB.addView(cryoView2);
-  roomB.addView(redView);
+  roomB.addView(windowView);
   roomB.addView(cryoView3);
   roomB.addView(cryoView4);
   roomB.addView(sdViewB);

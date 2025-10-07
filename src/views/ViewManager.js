@@ -88,9 +88,13 @@ class ViewManager {
 class GameState {
   constructor() {
     this.timerUp = false;
-    this.solved = false;
+    this.pinSolved = false;
 
-    this.deaths = 2;
+    this.deaths = 0;
+  }
+
+  incrementDeaths() {
+    this.deaths = this.deaths + 1;
   }
 
   getDeaths() {
@@ -105,15 +109,15 @@ class GameState {
     return this.timerUp;
   }
 
-  Solved() {
-    this.solved = true;
+  pinIsSolved() {
+    this.pinSolved = true;
   }
 
   getSolved() {
-    return this.solved;
+    return this.pinSolved;
   }
 
   isEnded() {
-    return this.solved || this.timerUp;
+    return this.pinSolved || this.timerUp;
   }
 }
