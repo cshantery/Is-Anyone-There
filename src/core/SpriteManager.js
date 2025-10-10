@@ -44,6 +44,8 @@ function loadSprites() {
     SM.add("closedRepair", loadImage('assets/placeholders/breaker/closedRepair.png'));
     SM.add("openRepair", loadImage('assets/placeholders/breaker/openRepair.png'));
     SM.add("rustyLock", loadImage('assets/placeholders/breaker/rustyLock.png'));
+    SM.add("voltimeter", loadImage('assets/placeholders/breaker/voltimeter.png'));
+    SM.add("electricalTape", loadImage('assets/placeholders/breaker/electricaltape.png'));
 }
 
 

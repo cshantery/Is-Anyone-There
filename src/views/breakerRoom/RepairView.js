@@ -4,13 +4,29 @@ class RepairToolCabinet{
         this.y = y;
         this.scale = scale;
 
+        // constants
+        this.clicksToBreak = 10; // break lock
         // for hitbox
         this.width = 4
         this.height = 3
 
+        // cabinet
         this.closedSprite = SM.get("closedRepair");
         this.closedSprite.setPos(this.x, this.y);
         this.closedSprite.setScale(this.scale);
+        
+        this.openSprite = SM.get("openRepair");
+        this.openSprite.setPos(this.x, this.y);
+        this.openSprite.setScale(this.scale);
+
+        // items - scale and pos manually set for now
+        this.voltimeter = SM.get("voltimeter");
+        this.voltimeter.setPos(this.x+2.3, this.y+1.72);
+        this.voltimeter.setScale(0.08);
+
+        this.electricalTape = SM.get("electricalTape");
+        this.electricalTape.setPos(this.x+1.2, this.y+1.95);
+        this.electricalTape.setScale(0.1);
 
         // --- lock visuals and mechanics
         // should be in lower right corner of repair tool cabinet, manually placed for now
@@ -20,6 +36,7 @@ class RepairToolCabinet{
 
         this.animationPlaying = false;
         this.clicks = 0;
+        this.lockBroken = false;
 
 
         this.onClick = onClick;
@@ -59,6 +76,7 @@ class RepairToolCabinet{
     onExit() {
         R.remove(this.closedSprite);
         R.remove(this.lockSprite)
+        R.add(this.openSprite)
     }
 
     mousePressed(p) {
@@ -68,6 +86,17 @@ class RepairToolCabinet{
             // play quick animation to show lock moving
             this.animationPlaying = true;
             this.clicks += 1;
+
+            if(this.clicks > this.clicksToBreak){
+                this.lockBroken = true;
+
+                R.remove(this.closedSprite)
+                R.remove(this.lockSprite)
+
+                R.add(this.openSprite)
+                R.add(this.electricalTape)
+                R.add(this.voltimeter)
+            }
         }
     }
 }
@@ -81,7 +110,7 @@ class RepairView extends View {
         this.textNotificationHandler = new TextNotificationHandler(0.5, 0.85, {holdFadeoutFor: 2.5});
 
         this.repairCabinet = new RepairToolCabinet(1, 1, 0.4, (clickCount) => {
-            if(clickCount % 4 == 0){
+            if(clickCount == 0){
                 this.textNotificationHandler.addText("A lock seems to be holding this cabinet shut.")
             }
             else if(clickCount == 2){
