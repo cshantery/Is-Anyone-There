@@ -4,11 +4,10 @@
  */
 const BROKEN_COMPONENT_ID = 1; // id of the broken cpu component 
 const repairTargetRegistry = {};
-function repairItemUsed(itemName, x, y, width, height){
+function repairItemUsed(itemName, x, y, width, height, notifHandler){
     // takes as input which item was used, with it's position and size
 
     // console.log(repairTargetRegistry)
-    // console.log(itemName)
 
     for(targetId in repairTargetRegistry){
         const targetx = repairTargetRegistry[targetId]['x']
@@ -25,9 +24,11 @@ function repairItemUsed(itemName, x, y, width, height){
         if(collide){
             if(targetId == BROKEN_COMPONENT_ID){
                 console.log(`used ${itemName} on target component`)
+                notifHandler.addText(`used ${itemName} on broken component.`)
             }
             else{
-                console.log(`used ${itemName} on non-target component`)
+                console.log(`used ${itemName} on perfectly working component.`)
+                notifHandler.addText(`used ${itemName} on perfectly working component.`)
             }
 
             break;
@@ -43,9 +44,10 @@ class MoveableRepairItem {
     
         itemUsed
     */
-    constructor(x, y, imgName, scale, itemUsed = () => {}) {
+    constructor(x, y, imgName, scale, notifHandler, itemUsed = () => {}) {
         this.id = imgName;
         this.itemUsed = itemUsed;
+        this.textNotificationHandler = notifHandler;
         this.initialx = x;
         this.initialy = y;
 
@@ -103,7 +105,7 @@ class MoveableRepairItem {
     mouseReleased() {
         // pass current coordinates into itemUsed callback (before teleporting to initial x and y)
         if(this.drag){
-            this.itemUsed(this.id, this.x, this.y, this.width, this.height);
+            this.itemUsed(this.id, this.x, this.y, this.width, this.height, this.textNotificationHandler);
         }
         
         this.drag = false;
@@ -182,7 +184,7 @@ class ElectricalComponent {
  * Repair Tool Cabinet holds moveable items
  */
 class RepairToolCabinet {
-    constructor(x, y, scale, onClick = () => {}) {
+    constructor(x, y, scale, notifHandler, onClick = () => {}) {
         this.x = x;
         this.y = y;
         this.scale = scale;
@@ -203,8 +205,8 @@ class RepairToolCabinet {
         this.openSprite.setScale(this.scale);
 
         // items - scale and pos manually set for now
-        this.voltimeter = new MoveableRepairItem(this.x + 2.3, this.y + 1.72, 'voltimeter', 0.08, repairItemUsed);
-        this.electricalTape = new MoveableRepairItem(this.x + 1.2, this.y + 1.95, 'electricalTape', 0.1, repairItemUsed);
+        this.voltimeter = new MoveableRepairItem(this.x + 2.3, this.y + 1.72, 'voltimeter', 0.08, notifHandler, repairItemUsed);
+        this.electricalTape = new MoveableRepairItem(this.x + 1.2, this.y + 1.95, 'electricalTape', 0.1, notifHandler, repairItemUsed);
 
         // --- lock visuals and mechanics
         // should be in lower right corner of repair tool cabinet, manually placed for now
@@ -367,7 +369,7 @@ class RepairView extends View {
             holdFadeoutFor: 2.5,
         });
 
-        this.repairCabinet = new RepairToolCabinet(1, 1, 0.4, (clickCount) => {
+        this.repairCabinet = new RepairToolCabinet(1, 1, 0.4, this.textNotificationHandler, (clickCount) => {
             if (clickCount == 0) {
                 this.textNotificationHandler.addText(
                     "A lock seems to be holding this cabinet shut."
