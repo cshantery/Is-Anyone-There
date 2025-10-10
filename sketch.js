@@ -206,7 +206,7 @@ function setupWorld() {
     // --- Room C (start here) ---
   const northWall = new NorthWall; // start view (index 0)
   const eastWall  = new EastWall();
-  const breakerWall  = new BreakerBoxView([{
+  const breakerWall  = new BreakerBox([{
     x: 6,
     y: 3,
     onTransition: () => {
