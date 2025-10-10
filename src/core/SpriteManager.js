@@ -43,6 +43,7 @@ function loadSprites() {
     // breaker room
     SM.add("closedRepair", loadImage('assets/placeholders/breaker/closedRepair.png'));
     SM.add("openRepair", loadImage('assets/placeholders/breaker/openRepair.png'));
+    SM.add("rustyLock", loadImage('assets/placeholders/breaker/rustyLock.png'));
 }
 
 
@@ -69,6 +70,7 @@ class Sprite {
         this.y = y;
         this.scale = scale / 100;
         this.customSize = null;
+        this.rotation = 0; // in radians
     }
 
     clone() {
@@ -93,6 +95,10 @@ class Sprite {
     setPos(x, y) {
         this.x = x;
         this.y = y; 
+    }
+
+    setRotation(r){
+        this.rotation = r;
     }
 
     getNativeSize() {
@@ -123,6 +129,12 @@ class Sprite {
         }
 
         push();
+        
+        if(this.rotation != 0){
+            translate(this.x*u, this.y*v) // change origin for rotation to be around current sprite
+            rotate(this.rotation)
+            translate(-(this.x*u), -(this.y*v)) // change origin back for drawing
+        }
         image(this.src, this.x * u, this.y * v, w, h )
         pop();
     }
