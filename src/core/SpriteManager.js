@@ -117,6 +117,21 @@ class Sprite {
         ];
     }
 
+    // temporary because idk what getvirtualsize returns
+    // should give us the w and h in virtual units (0-16, and 0-9)
+    getWH(){
+        let w, h
+        if (this.customSize) {
+            w = this.customSize.w;
+            h = this.customSize.h;
+        } else {
+            w = this.src.width * this.scale;
+            h = this.src.height * this.scale;
+        }
+
+        return [w, h]
+    }
+
     draw() {
         const u = VM.u();
         const v = VM.v();
