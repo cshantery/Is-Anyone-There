@@ -46,6 +46,12 @@ function loadSprites() {
     SM.add("rustyLock", loadImage('assets/placeholders/breaker/rustyLock.png'));
     SM.add("voltimeter", loadImage('assets/placeholders/breaker/voltimeter.png'));
     SM.add("electricalTape", loadImage('assets/placeholders/breaker/electricaltape.png'));
+
+    SM.add("componentHolder", loadImage('assets/placeholders/breaker/componentHolder.png'));
+    SM.add("cpu1", loadImage('assets/placeholders/breaker/cpu.png'));
+    SM.add("cpu2", loadImage('assets/placeholders/breaker/cpu2.png'));
+    SM.add("cpu3", loadImage('assets/placeholders/breaker/cpu3.png'));
+    SM.add("cpu4", loadImage('assets/placeholders/breaker/cpu4.png'));
 }
 
 

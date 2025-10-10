@@ -1,3 +1,6 @@
+/**
+ * Class for repair item moving
+ */
 class MoveableRepairItem {
     /* Ideally we want a moveable object base class later */
     constructor(x, y, imgName, scale) {
@@ -61,6 +64,61 @@ class MoveableRepairItem {
     }
 }
 
+/**
+ * Class for static components that will be fixed my movable items
+ */
+class ElectricalComponent {
+    constructor(x, y, imgName, scale) {
+        this.x = x;
+        this.y = y;
+
+        this.sprite = SM.get(imgName)
+        this.sprite.setPos(this.x, this.y);
+        this.sprite.setScale(scale);
+
+        [this.width, this.height] = this.sprite.getWH()
+    }
+
+    isMouseInBounds(mx, my) {
+        const m = mx != null && my != null ? { x: mx, y: my } : VM.mouse();
+        return (
+            m.x >= this.x &&
+            m.x <= this.x + this.width &&
+            m.y >= this.y &&
+            m.y <= this.y + this.height
+        );
+    }
+
+    update(dt) {
+    }
+
+    mousePressed(p) {
+        if (this.isMouseInBounds(p?.x, p?.y)) {
+            const m = VM.mouse();
+            this.drag = true;
+
+            // change in positions on drag
+            this.dragDx = m.x - this.x;
+            this.dragDy = m.y - this.y;
+        }
+    }
+
+    mouseReleased() {
+        this.drag = false;
+    }
+
+    onEnter(){
+        R.add(this.sprite, 13)
+    }
+
+    onExit(){
+        R.remove(this.sprite)
+    }
+}
+
+/**
+ * Repair Tool Cabinet holds moveable items
+ */
 class RepairToolCabinet {
     constructor(x, y, scale, onClick = () => {}) {
         this.x = x;
@@ -164,6 +222,65 @@ class RepairToolCabinet {
     }
 }
 
+/**
+ * Component holder will hold the ElectricalComponent objects
+ */
+class ComponentHolderObject{
+    constructor(x, y, scale,  onClick = () => {}) {
+        this.x = x;
+        this.y = y;
+        this.scale = scale;
+
+        this.sprite = SM.get('componentHolder');
+        this.sprite.setPos(this.x, this.y);
+        this.sprite.setScale(this.scale);
+
+        [this.width, this.height] = this.sprite.getWH()
+
+        // manually position electrical components
+        this.ecs = [];
+        this.ecs.push(new ElectricalComponent(1.8, 6, 'cpu1', 0.1))
+        this.ecs.push(new ElectricalComponent(1.95, 6.9, 'cpu2', 0.09))
+        this.ecs.push(new ElectricalComponent(7.2, 6.6, 'cpu3', 0.12))
+        this.ecs.push(new ElectricalComponent(5.3, 6.3, 'cpu4', 0.15))
+
+        this.onClick = onClick;
+    }
+
+    isMouseInBounds(mx, my) {
+        const m = mx != null && my != null ? { x: mx, y: my } : VM.mouse();
+
+        return (
+            m.x >= this.x &&
+            m.x <= this.x + this.width &&
+            m.y >= this.y &&
+            m.y <= this.y + this.height
+        );
+    }
+
+    onEnter() {
+        R.add(this.sprite, 9)
+
+        for(let ec of this.ecs){
+            R.add(ec, 10);
+            ec.onEnter();
+        }
+    }
+    onExit() {
+        R.remove(this.sprite);
+        for(let ec of this.ecs){
+            R.remove(ec);
+            ec.onExit();
+        }
+    }
+
+    mousePressed(p) {
+        if (this.isMouseInBounds(p?.x, p?.y)) {
+            this.onClick(this);
+        }
+    }
+}
+
 class RepairView extends View {
     constructor() {
         super(0, 0, 0, "");
@@ -183,6 +300,8 @@ class RepairView extends View {
                 this.textNotificationHandler.addText("This lock looks old...");
             }
         });
+
+        this.componentHolder = new ComponentHolderObject(1.2, 5, 0.6, ()=>{});
     }
 
     update(dt) {
@@ -195,16 +314,20 @@ class RepairView extends View {
     onEnter() {
         R.add(this.background);
         R.add(this.repairCabinet);
+        R.add(this.componentHolder);
 
         // call on enters
         this.repairCabinet.onEnter();
+        this.componentHolder.onEnter();
     }
-
+    
     onExit() {
         R.remove(this.background);
         R.remove(this.repairCabinet);
-
-        // call on exit
+        R.remove(this.componentHolder);
+        
+        // call on exits
         this.repairCabinet.onExit();
+        this.componentHolder.onExit();
     }
 }
