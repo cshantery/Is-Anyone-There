@@ -68,7 +68,7 @@ class RepairToolCabinet {
         this.scale = scale;
 
         // constants
-        this.clicksToBreak = 1; // break lock
+        this.clicksToBreak = 10; // break lock
         // for hitbox
         this.width = 4;
         this.height = 3;
