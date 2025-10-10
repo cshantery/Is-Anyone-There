@@ -39,6 +39,10 @@ function loadSprites() {
     SM.add("ActiveChamber2", loadImage('assets/placeholders/CryoChambercopy.png'));
     SM.add("ActiveChamber3", loadImage('assets/placeholders/CryoChambercopy2.png'));
     SM.add("ActiveChamber4", loadImage('assets/placeholders/CryoChambercopy3.png'));
+    
+    // breaker room
+    SM.add("closedRepair", loadImage('assets/placeholders/breaker/closedRepair.png'));
+    SM.add("openRepair", loadImage('assets/placeholders/breaker/openRepair.png'));
 }
 
 

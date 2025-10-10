@@ -161,6 +161,10 @@ function setupWorld() {
   const boxesView    = new BoxesView();
   const fcView       = new FileCabinetView();
 
+  // ------ Temporary - for development and testing only
+  const repairView = new RepairView();
+  // ----------------------
+
   // Door in Room A -> Room B (index 1), land on view 0
   const sdViewA = new SlidingDoorView([{
     x:12, y:2.5, scale:0.8,
@@ -170,6 +174,11 @@ function setupWorld() {
 
   const roomA = new ViewManager();
   roomA.addView(computerView);  // index 0 (start)
+
+  // ------ Temporary - for development and testing only
+  roomA.addView(repairView);
+  // ----------------------
+
   roomA.addView(boxesView);
   roomA.addView(fcView);
   roomA.addView(sdViewA);
