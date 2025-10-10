@@ -1,9 +1,54 @@
+/** Temporarily utility object function for checking the collision
+ * if we do more rooms like this (where you have to drag items to use them), we 
+ * probably wanna figure out a better way.
+ */
+const BROKEN_COMPONENT_ID = 1; // id of the broken cpu component 
+const repairTargetRegistry = {};
+function repairItemUsed(itemName, x, y, width, height){
+    // takes as input which item was used, with it's position and size
+
+    // console.log(repairTargetRegistry)
+    // console.log(itemName)
+
+    for(targetId in repairTargetRegistry){
+        const targetx = repairTargetRegistry[targetId]['x']
+        const targety = repairTargetRegistry[targetId]['y']
+        const targetw = repairTargetRegistry[targetId]['w']
+        const targeth = repairTargetRegistry[targetId]['h']
+
+        // for now only checks if top left corner of item is within the bounds of target
+        const collide = (x >= targetx &&
+            x <= targetx + targetw &&
+            y >= targety &&
+            y <= targety + targeth)
+
+        if(collide){
+            if(targetId == BROKEN_COMPONENT_ID){
+                console.log(`used ${itemName} on target component`)
+            }
+            else{
+                console.log(`used ${itemName} on non-target component`)
+            }
+
+            break;
+        }
+    }
+}
+
 /**
  * Class for repair item moving
  */
 class MoveableRepairItem {
-    /* Ideally we want a moveable object base class later */
-    constructor(x, y, imgName, scale) {
+    /* Ideally we want a moveable object base class later 
+    
+        itemUsed
+    */
+    constructor(x, y, imgName, scale, itemUsed = () => {}) {
+        this.id = imgName;
+        this.itemUsed = itemUsed;
+        this.initialx = x;
+        this.initialy = y;
+
         this.x = x;
         this.y = y;
 
@@ -31,7 +76,10 @@ class MoveableRepairItem {
     }
 
     update(dt) {
-        if (!this.drag) return;
+        if (!this.drag) {
+            this.sprite.setPos(this.x, this.y); // make sure we reset to original position
+            return;
+        }
 
         const m = VM.mouse();
 
@@ -53,14 +101,28 @@ class MoveableRepairItem {
     }
 
     mouseReleased() {
+        // pass current coordinates into itemUsed callback (before teleporting to initial x and y)
+        if(this.drag){
+            this.itemUsed(this.id, this.x, this.y, this.width, this.height);
+        }
+        
         this.drag = false;
+
+        this.x = this.initialx;
+        this.y = this.initialy;
+
     }
 
     // make the item actually visible
     onEnter(){
-        R.add(this.sprite, 12)
+        R.add(this.sprite, 16)
 
         this.active = true;
+    }
+
+    onExit(){
+        R.remove(this.sprite)
+        this.active = false;
     }
 }
 
@@ -68,15 +130,20 @@ class MoveableRepairItem {
  * Class for static components that will be fixed my movable items
  */
 class ElectricalComponent {
-    constructor(x, y, imgName, scale) {
+    constructor(id, x, y, imgName, scale, onClick=()=>{}) {
+        this.id = id;
         this.x = x;
         this.y = y;
+        this.click = onClick;
 
         this.sprite = SM.get(imgName)
         this.sprite.setPos(this.x, this.y);
         this.sprite.setScale(scale);
 
         [this.width, this.height] = this.sprite.getWH()
+
+        // add to repair target registry for collision checking with items
+        repairTargetRegistry[id] = {x:this.x, y:this.y, w:this.width, h:this.height};
     }
 
     isMouseInBounds(mx, my) {
@@ -94,12 +161,7 @@ class ElectricalComponent {
 
     mousePressed(p) {
         if (this.isMouseInBounds(p?.x, p?.y)) {
-            const m = VM.mouse();
-            this.drag = true;
-
-            // change in positions on drag
-            this.dragDx = m.x - this.x;
-            this.dragDy = m.y - this.y;
+            this.click(this);
         }
     }
 
@@ -141,8 +203,8 @@ class RepairToolCabinet {
         this.openSprite.setScale(this.scale);
 
         // items - scale and pos manually set for now
-        this.voltimeter = new MoveableRepairItem(this.x + 2.3, this.y + 1.72, 'voltimeter', 0.08, 1);
-        this.electricalTape = new MoveableRepairItem(this.x + 1.2, this.y + 1.95, 'electricalTape', 0.1, 1);
+        this.voltimeter = new MoveableRepairItem(this.x + 2.3, this.y + 1.72, 'voltimeter', 0.08, repairItemUsed);
+        this.electricalTape = new MoveableRepairItem(this.x + 1.2, this.y + 1.95, 'electricalTape', 0.1, repairItemUsed);
 
         // --- lock visuals and mechanics
         // should be in lower right corner of repair tool cabinet, manually placed for now
@@ -193,6 +255,10 @@ class RepairToolCabinet {
         R.remove(this.closedSprite);
         R.remove(this.lockSprite);
         R.add(this.openSprite);
+
+        // call onexit to cleanup the moveable objects after cabinet has been opened
+        this.voltimeter.onExit()
+        this.electricalTape.onExit()
     }
 
     mousePressed(p) {
@@ -226,10 +292,11 @@ class RepairToolCabinet {
  * Component holder will hold the ElectricalComponent objects
  */
 class ComponentHolderObject{
-    constructor(x, y, scale,  onClick = () => {}) {
+    constructor(x, y, scale, viewNotifHandler, onClick = () => {}) {
         this.x = x;
         this.y = y;
         this.scale = scale;
+        this.textNotificationHandler = viewNotifHandler;
 
         this.sprite = SM.get('componentHolder');
         this.sprite.setPos(this.x, this.y);
@@ -238,11 +305,20 @@ class ComponentHolderObject{
         [this.width, this.height] = this.sprite.getWH()
 
         // manually position electrical components
+        const componentClickMessage = () => {
+            if(Math.random() > 0.5){
+                this.textNotificationHandler.addText("Maybe one of these electrical components is broken.");
+            }
+            else{
+                this.textNotificationHandler.addText("Perhaps I can repair this?");
+            }
+        }
+
         this.ecs = [];
-        this.ecs.push(new ElectricalComponent(1.8, 6, 'cpu1', 0.1))
-        this.ecs.push(new ElectricalComponent(1.95, 6.9, 'cpu2', 0.09))
-        this.ecs.push(new ElectricalComponent(7.2, 6.6, 'cpu3', 0.12))
-        this.ecs.push(new ElectricalComponent(5.3, 6.3, 'cpu4', 0.15))
+        this.ecs.push(new ElectricalComponent(0, 1.8, 6, 'cpu1', 0.1, componentClickMessage))
+        this.ecs.push(new ElectricalComponent(1, 1.95, 6.9, 'cpu2', 0.09, componentClickMessage))
+        this.ecs.push(new ElectricalComponent(2, 7.2, 6.6, 'cpu3', 0.12, componentClickMessage))
+        this.ecs.push(new ElectricalComponent(3, 5.3, 6.3, 'cpu4', 0.15, componentClickMessage))
 
         this.onClick = onClick;
     }
@@ -301,7 +377,7 @@ class RepairView extends View {
             }
         });
 
-        this.componentHolder = new ComponentHolderObject(1.2, 5, 0.6, ()=>{});
+        this.componentHolder = new ComponentHolderObject(1.2, 5, 0.6, this.textNotificationHandler, ()=>{});
     }
 
     update(dt) {
