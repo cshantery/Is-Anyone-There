@@ -1,7 +1,7 @@
 let cnv;
 let R;
 let SM = new SpriteManager(); // Sprite Manager
-let GS = new GameState();
+let GS;
 let WORLD;
 
 let ended = false;
@@ -55,6 +55,20 @@ function preload() {
 function setup() {
   fit16x9();
   VM.updateUnits(); // compute VM.U / VM.V now that width/height exist
+
+  const savedState = localStorage.getItem('currentGameState');
+
+  if(savedState){
+    console.log("saved state found...");
+    const savedData = JSON.parse(savedState);
+    GS = new GameState();
+    GS.solved = savedData.solved;
+    GS.timerUp = savedData.timerUp;
+  } else{
+    console.log("no state found, creating new state...");
+    GS = new GameState();
+  }
+
 
   R = new Renderer();
 

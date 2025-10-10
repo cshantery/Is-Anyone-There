@@ -24,65 +24,27 @@ class BreakerBox{
 
     update(dt){}
 
-    draw() {
-    // You can draw a placeholder rectangle for the breaker box
+  draw() {
+    this.background.draw();
+    
+    // You can also draw a static, non-interactive sprite for the breaker box here
     const u = VM.u();
     const v = VM.v();
-    fill(300);
+    fill(150);
     stroke(220);
     strokeWeight(4);
-    rect(this.x * u, this.y * v, breakerBoxWidth * u, breakerBoxHeight * v);
+    rect(6 * u, 3 * v, 2 * u, 3 * v); // Draws a placeholder rectangle
   }
 
-    onEnter() {
-        R.add(this);
-        R.add(this.highlight);
-    }
-
-    onExit() {
-        R.remove(this);
-        R.remove(this.highlight);
+  onEnter() {
+    R.add(this);
+    R.add(this.breakerBoxHighlight);
+    console.log("BreakerBoxHighlight has been added to the renderer:", this.breakerBoxHighlight);
   }
-}
 
-
-
-class BreakerBoxView extends View{
-    constructor(breakerBoxes = [], backgroundAsset = null) {
-        super();
-
-        this.background = backgroundAsset ?? SM.get("placeholderWall");
-        this.background.setSize(16, 9);
-
-        // Create a new BreakerBox object for each configuration passed in
-        this.boxes = breakerBoxes.map(config => new BreakerBox(
-            config.x,
-            config.y,
-            config.onTransition ?? null
-        ));
-    }
-
-    update(dt) {
-        this.boxes.forEach(box => box.update(dt));
-    }
-
-    draw() {
-        this.background.draw();
-        this.boxes.forEach(box => box.draw());
-    }
-
-    onEnter() {
-        R.add(this);
-        this.boxes.forEach(box => box.onEnter());
-    }
-
-    onExit() {
-        R.remove(this);
-        this.boxes.forEach(box => box.onExit());
-    }
-
-    mousePressed(p) {
-        console.log("BreakerBoxView received a click!");
-        this.boxes.forEach(box => box.mousePressed(p));
-    }
+  onExit() {
+    R.remove(this);
+    R.remove(this.background);
+    R.remove(this.breakerBoxHighlight);
+  }
 }

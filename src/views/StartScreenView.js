@@ -305,9 +305,22 @@ class EndScreenView extends View {
   restartGame() {
     // Clear any active interfaces
     window.activeInterface = null;
-    
+
+    const finalStateString = JSON.stringify(GS);
+    localStorage.setItem('completedGame', finalStateString);
+    console.log("Final score has been saved!");
+
+
+    const newGame = new GameState();
+    //conert current game state object to string
+    const newGameString = JSON.stringify(newGame); 
+    //save gmae state string in local storage with unique key
+    localStorage.setItem('currentGameState', newGameString);
+    console.log("New game ready to start.");
     // Restart the game by reloading the page
     // This is the simplest way to ensure a clean restart
+  
     location.reload();
+  
   }
 }
