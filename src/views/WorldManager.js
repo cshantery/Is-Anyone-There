@@ -2,6 +2,7 @@ class WorldManager {
     constructor() {
         this.rooms = [];   // array of ViewManager instances
         this.current = 0;  // index of active room
+        this.previous = null; 
     }
 
     keyPressed() {
@@ -35,6 +36,7 @@ class WorldManager {
             : this.rooms.indexOf(indexOrVm);
 
         if (nextIndex < 0 || nextIndex >= this.rooms.length) return;
+        this.previous = this.current; 
 
         const currentVm = this.rooms[this.current];
         R.remove(currentVm);
