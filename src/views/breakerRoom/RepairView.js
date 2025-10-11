@@ -22,13 +22,32 @@ function repairItemUsed(itemName, x, y, width, height, notifHandler){
             y <= targety + targeth)
 
         if(collide){
-            if(targetId == BROKEN_COMPONENT_ID){
-                console.log(`used ${itemName} on target component`)
-                notifHandler.addText(`used ${itemName} on broken component.`)
+            // if(targetId == BROKEN_COMPONENT_ID){
+            //     console.log(`used ${itemName} on target component`)
+            //     notifHandler.addText(`used ${itemName} on broken component.`)
+            // }
+            // else{
+            //     console.log(`used ${itemName} on perfectly working component.`)
+            //     notifHandler.addText(`used ${itemName} on perfectly working component.`)
+            // }
+
+            // You die if you use electrical tape on working component
+            if((itemName == 'electricalTape') && (targetId != BROKEN_COMPONENT_ID)){
+                console.log('Used electrical tape on working component (player died)')
+                GS.TimerDone()
+            }
+            // you fix the component if you use electrical tape on broken component
+            else if((itemName == 'electricalTape') && (targetId == BROKEN_COMPONENT_ID)){
+                notifHandler.addText('You have fixed a broken component!')
+            }
+            else if((itemName == 'voltimeter') && (targetId != BROKEN_COMPONENT_ID)){
+                notifHandler.addText('This component seems to be working fine.')
+            }
+            else if((itemName == 'voltimeter') && (targetId == BROKEN_COMPONENT_ID)){
+                notifHandler.addText('This component is not functional.')
             }
             else{
-                console.log(`used ${itemName} on perfectly working component.`)
-                notifHandler.addText(`used ${itemName} on perfectly working component.`)
+                console.log('A collision happened and this interaction is not defined.')
             }
 
             break;
