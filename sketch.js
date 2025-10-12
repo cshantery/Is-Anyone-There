@@ -181,36 +181,62 @@ function setupWorld() {
   roomA.addView(fcView);
   roomA.addView(sdViewA);
   sdViewA.setRoom?.(roomA);
+  
+  // --- Room B (Breaker Room)
 
-  // --- Room B (plain colors + label) ---
+  const repairView = new RepairView();
+  const wiresView = new WiresView();
+
+  // Door in Room B -> back to Room A (index 1), land on computerView (view 0)
+  const EntranceB = new SlidingDoorView([{
+    x:12, y:2, scale:1,
+    targetRoom: 0,        // <-- to room A
+    targetViewIndex: 0
+  }],SM.get("MetalWall"));
+
+  // Door in Room B -> to Room C (index 1), land on Cryo 1 (view 0)
+  const doorToCryoB = new SlidingDoorView([{
+    x:12, y:2, scale:1,
+    targetRoom: 2,        // <-- to room C
+    targetViewIndex: 0
+  }],SM.get("MetalWall"));
+
+  const roomB = new ViewManager();
+  roomB.addView(repairView);
+  roomB.addView(wiresView);
+  roomB.addView(EntranceB);
+  roomB.addView(doorToCryoB);
+  doorToCryoB.setRoom?.(roomB);
+  EntranceB.setRoom?.(roomB);
+
+  // --- Room C (Cryo Chamber Room) ---
   //class PlainView extends View { constructor(r,g,b,label){ super(r,g,b,label); } }
-
-
+  
   const windowView = new SpaceWindowView();
-  //const redView   = new PlainView(200, 40, 40,   'Room B - RED');
+  //const redView   = new PlainView(200, 40, 40,   'Room C - RED');
   const cryoView1 = new CryoView(0);
   const cryoView2 = new CryoView(1);
   const cryoView3 = new CryoView(2);
   const cryoView4 = new CryoView(3);
 
-  // Door in Room B -> back to Room A (index 0), land on computerView (view 0)
-  const sdViewB = new SlidingDoorView([{
+  // Door in Room C -> back to Room B (index 1), land on repairView (view 0)
+  const sdViewC = new SlidingDoorView([{
     x:12, y:2, scale:1,
-    targetRoom: 0,        // <-- to room c
+    targetRoom: 1,        // <-- to room B
     targetViewIndex: 0
   }],SM.get("MetalWall"));
 
-  const roomB = new ViewManager();
-  roomB.addView(cryoView1);
-  roomB.addView(cryoView2);
-  roomB.addView(windowView);
-  roomB.addView(cryoView3);
-  roomB.addView(cryoView4);
-  roomB.addView(sdViewB);
-  sdViewB.setRoom?.(roomB);
+  const roomC = new ViewManager();
+  roomC.addView(cryoView1);
+  roomC.addView(cryoView2);
+  roomC.addView(windowView);
+  roomC.addView(cryoView3);
+  roomC.addView(cryoView4);
+  roomC.addView(sdViewC);
+  sdViewC.setRoom?.(roomC);
 
 
-    // --- Room C (start here) ---
+  /* // --- Room C (start here) ---
   const northWall = new NorthWall; // start view (index 0)
   const eastWall  = new EastWall();
   const breakerWall  = new BreakerBox([{
@@ -235,11 +261,11 @@ function setupWorld() {
   roomC.addView(eastWall);
   roomC.addView(breakerWall);
   roomC.addView(sdViewC);
-  sdViewC.setRoom?.(roomC);
+  sdViewC.setRoom?.(roomC);*/
 
   // register rooms (A=0, B=1, C=2) and let WORLD receive key events
   WORLD.addRoom(roomA);   // index 0
   WORLD.addRoom(roomB);   // index 1
-  WORLD.addRoom(roomC);
+  WORLD.addRoom(roomC);   // index 2
   R.add(WORLD, 1000);
 }
