@@ -123,6 +123,12 @@ function mousePressed() {
   if (R) R.dispatch('mousePressed', m);
 }
 
+function mouseDragged() {
+  const m = VM.mouse();
+  if (!VM.insideUnits(m)) return;
+  R.dispatch('mouseDragged', m);
+}
+
 function mouseReleased() {
   if (R) R.dispatch('mouseReleased');
 }
@@ -163,6 +169,7 @@ function setupWorld() {
 
   // ------ Temporary - for development and testing only
   const repairView = new RepairView();
+  const wiresView = new WiresView();
   // ----------------------
 
   // Door in Room A -> Room B (index 1), land on view 0
@@ -177,6 +184,7 @@ function setupWorld() {
 
   // ------ Temporary - for development and testing only
   roomA.addView(repairView);
+  roomA.addView(wiresView);
   // ----------------------
 
   roomA.addView(boxesView);

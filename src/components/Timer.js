@@ -74,4 +74,9 @@ class ScreenTimer {
         drawingContext.shadowBlur = 0;
         pop();
     }
+
+    addTime(seconds) {
+        this.timer.duration += seconds * 1000; // convert seconds to milliseconds
+    }
+
 }
