@@ -104,7 +104,7 @@ function draw() {
     if(!GS.getSolved()) {
       GS.incrementDeaths();
     }
-    R.add(endScreen, 999);
+    // R.add(endScreen, 999);
   }
   R.update(dt);
   R.draw();
@@ -171,7 +171,8 @@ function setupWorld() {
   const sdViewA = new SlidingDoorView([{
     x:12, y:2.5, scale:0.8,
     targetRoom: 1,         // <-- ROOM B
-    targetViewIndex: 0    // land on first plain color view
+    targetViewIndex: 0,    // land on first plain color view
+    lockedCondition : () => GS.pinSolved
   }]);
 
   const roomA = new ViewManager();

@@ -12,6 +12,11 @@ class SlidingDoor {
         this.y = y;
         this.scale = scale;
         this.onClick = onClick;
+        this.locked = cfg.locked ?? true; 
+        this.lockedCondition = cfg.lockedCondition ?? (() => false);
+
+        this.autoCloseDelay = cfg.autoCloseDelay ?? 2; // seconds
+        this.autoCloseTimer = 0; // countdown once open
 
         // clickable highlight
         this.highlight = new HighlightEvent(this.x, this.y, doorWidth, doorHeight);
@@ -53,6 +58,26 @@ class SlidingDoor {
         );
         if (!hit) return false;
 
+        const textNotificationHandler = this._room?.textNotificationHandler; 
+
+        if (WORLD.previous === this.targetRoom) {
+            this.locked = false;
+        }   
+
+        const canOpen = this.lockedCondition(); 
+
+        if(!canOpen){
+            if(textNotificationHandler) textNotificationHandler.addText("It seems as though you need to complete something to open the door..");
+                this.locked = true; 
+                return true; 
+        }
+
+        if(this.locked){
+            if(textNotificationHandler) textNotificationHandler.addText("Door unlocked!");
+            this.locked = false; 
+        }
+
+
         this.toggle();
 
         // always schedule jump after the open animation delay
@@ -74,26 +99,37 @@ class SlidingDoor {
         this.isOpen = !this.isOpen;
         this.animating = true; // starting animation
         this.animationTimer = 0; // reset timer 
+
+        if(this.isOpen){
+            this.autoCloseTimer = this.autoCloseDelay; 
+        }
     }
 
     update(dt) {
-        if (!this.animating) return; // do nothing if no animation
+        if(this.animating){
+            this.animationTimer += dt; // counting how much time has passed since last frame change
+            if (this.animationTimer >= this.frameDuration) {
+                this.animationTimer = 0; // reset for next frame 
+                if (this.isOpen) {
+                    // move to the next frame 
+                    this.currentFrame++;
+                    if (this.currentFrame >= this.frames.length - 1) {
+                        this.currentFrame = this.frames.length - 1;
+                        this.animating = false;
+                    }
+                } else { // means the door is closing, move to prev. frame 
+                    this.currentFrame--;
+                    if (this.currentFrame == 0) {
+                        this.animating = false;
+                    }
+                }
+            }
+        }
 
-        this.animationTimer += dt; // counting how much time has passed since last frame change
-        if (this.animationTimer >= this.frameDuration) {
-            this.animationTimer = 0; // reset for next frame 
-            if (this.isOpen) {
-                // move to the next frame 
-                this.currentFrame++;
-                if (this.currentFrame >= this.frames.length - 1) {
-                    this.currentFrame = this.frames.length - 1;
-                    this.animating = false;
-                }
-            } else { // means the door is closing, move to prev. frame 
-                this.currentFrame--;
-                if (this.currentFrame == 0) {
-                    this.animating = false;
-                }
+        if (this.isOpen && !this.animating) {
+            this.autoCloseTimer -= dt;
+            if (this.autoCloseTimer <= 0) {
+                this.toggle(); // automatically start closing
             }
         }
     }
@@ -131,6 +167,8 @@ class SlidingDoorView extends View {
         this.background = backgroundAsset ?? SM.get("SouthWall");
         this.background.setSize(16, 9); 
 
+        this.textNotificationHandler = new TextNotificationHandler(0.5, 1);
+
         // FIX: pass the entire config as cfg
         this.door = slidingDoors.map(config => new SlidingDoor(
             config.x,
@@ -143,6 +181,7 @@ class SlidingDoorView extends View {
         }
 
     update(dt) {
+        this.textNotificationHandler.update(dt); 
         this.door.forEach(door=> door.update(dt));
     }
 
@@ -160,6 +199,7 @@ class SlidingDoorView extends View {
     onExit() {
         R.remove(this);
         this.door.forEach(door => door.onExit());
+        this.textNotificationHandler.cleanup(); 
     }
 
     mousePressed(p) {
@@ -170,7 +210,7 @@ class SlidingDoorView extends View {
     }
 
     setRoom(vm) {
-        this.door.forEach(d => d.setRoom(vm));
+        this.door.forEach(d => d.setRoom(this));
     }
 }
 
