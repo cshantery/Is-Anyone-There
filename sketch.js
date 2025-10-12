@@ -211,7 +211,7 @@ function setupWorld() {
 
   // --- Room C (Cryo Chamber Room) ---
   //class PlainView extends View { constructor(r,g,b,label){ super(r,g,b,label); } }
-  
+
   const windowView = new SpaceWindowView();
   //const redView   = new PlainView(200, 40, 40,   'Room C - RED');
   const cryoView1 = new CryoView(0);
@@ -234,34 +234,6 @@ function setupWorld() {
   roomC.addView(cryoView4);
   roomC.addView(sdViewC);
   sdViewC.setRoom?.(roomC);
-
-
-  /* // --- Room C (start here) ---
-  const northWall = new NorthWall; // start view (index 0)
-  const eastWall  = new EastWall();
-  const breakerWall  = new BreakerBox([{
-    x: 6,
-    y: 3,
-    onTransition: () => {
-      // This is the function that launches the puzzle
-      if (window.activeInterface) return;
-      R.add(new WirePuzzle(() => {}));
-    }
-  }], SM.get("placeholderWall"));
-
-  // Door in Room C -> Room A (index 0), land on view 0
-  const sdViewC = new SlidingDoorView([{
-    x:12, y:2.5, scale:0.8,
-    targetRoom: 0,        // <-- ROOM A
-    targetViewIndex: 0    // land on computerview
-  }], SM.get("placeholderWall"));
-
-  const roomC = new ViewManager();
-  roomC.addView(northWall);  // index 0 (start)
-  roomC.addView(eastWall);
-  roomC.addView(breakerWall);
-  roomC.addView(sdViewC);
-  sdViewC.setRoom?.(roomC);*/
 
   // register rooms (A=0, B=1, C=2) and let WORLD receive key events
   WORLD.addRoom(roomA);   // index 0
