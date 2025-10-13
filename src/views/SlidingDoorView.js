@@ -72,7 +72,158 @@ class SlidingDoor {
                 return true; 
         }
 
-        if(this.locked){
+        if(canOpen){
+            if(textNotificationHandler) textNotificationHandler.addText("Door unlocked!");
+            this.locked = false; 
+        }
+
+
+        this.toggle();
+
+        // always schedule jump after the open animation delay
+        setTimeout(() => {
+            if (this.targetView) {
+                if (this._room && typeof this._room.gotoView === 'function') {
+                    this._room.gotoView(this.targetView);
+                }
+            } else if (this.targetRoom != null && typeof WORLD?.gotoRoom === 'function') {
+                WORLD.gotoRoom(this.targetRoom, this.targetViewIndex);
+            }
+        }, 450);
+
+        return true; // consume the click
+    }
+
+    // switching between open and closed 
+    toggle() {
+        this.isOpen = !this.isOpen;
+        this.animating = true; // starting animation
+        this.animationTimer = 0; // reset timer 
+
+        if(this.isOpen){
+            this.autoCloseTimer = this.autoCloseDelay; 
+        }
+    }
+
+    update(dt) {
+        if(this.animating){
+            this.animationTimer += dt; // counting how much time has passed since last frame change
+            if (this.animationTimer >= this.frameDuration) {
+                this.animationTimer = 0; // reset for next frame 
+                if (this.isOpen) {
+                    // move to the next frame 
+                    this.currentFrame++;
+                    if (this.currentFrame >= this.frames.length - 1) {
+                        this.currentFrame = this.frames.length - 1;
+                        this.animating = false;
+                    }
+                } else { // means the door is closing, move to prev. frame 
+                    this.currentFrame--;
+                    if (this.currentFrame == 0) {
+                        this.animating = false;
+                    }
+                }
+            }
+        }
+
+        if (this.isOpen && !this.animating) {
+            this.autoCloseTimer -= dt;
+            if (this.autoCloseTimer <= 0) {
+                this.toggle(); // automatically start closing
+            }
+        }
+    }
+
+    setRoom(vm) { 
+        this._room = vm; 
+    }
+
+    draw() {
+        this.frames[this.currentFrame].draw();
+    }
+
+    onEnter() {
+        R.add(this);
+        R.add(this.highlight);
+
+
+    }
+
+    onExit() {
+        R.remove(this);
+        R.remove(this.highlight); 
+
+    }
+}
+
+class StandaloneSlidingDoor {
+    constructor(x, y, scale, onClick = () => { }, l = true, 
+                ad = 2, tv = null, tr = null, tvi = 0, lockedCondition = () => false) {
+        this.x = x;
+        this.y = y;
+        this.scale = scale;
+        this.onClick = onClick;
+        this.locked = l; 
+        this.lockedCondition = lockedCondition;
+
+        this.autoCloseDelay = ad; // seconds
+        this.autoCloseTimer = 0; // countdown once open
+
+        // clickable highlight
+        this.highlight = new HighlightEvent(this.x, this.y, doorWidth, doorHeight);
+
+        this.targetView = tv;       
+        this.targetRoom = tr;       
+        this.targetViewIndex = tvi;
+
+        // loading frames of sliding door
+        this.frames = [
+            // clone just makes sure each sliding 
+            // door gets their own individual frame
+            SM.get("SlidingDoor1").clone(),
+            SM.get("SlidingDoor2").clone(),
+            SM.get("SlidingDoor3").clone(),
+            SM.get("SlidingDoor4").clone()
+        ];
+
+        this.frames.forEach(f => {
+            if (!f) throw new Error("SlidingDoor frame missing!");
+            f.setPos(this.x, this.y);
+            f.setScale(this.scale);
+            f.setSize(doorWidth, doorHeight)
+        });
+
+        this.currentFrame = 0; // what frame we're drawing, default (0) means it's closed
+        this.isOpen = false; // door is closed
+        this.animating = false; 
+        this.animationTimer = 0; 
+        this.frameDuration = frameDuration; // 0.1s per frame
+    }
+
+    mousePressed(p) {
+        const m = p || VM.mouse();
+        const hit = (
+            m.x >= this.x && m.x <= this.x + doorClickWidth &&
+            m.y >= this.y && m.y <= this.y + doorClickHeight &&
+            !this.animating
+        );
+        if (!hit) return false;
+
+        const textNotificationHandler = this._room?.textNotificationHandler; 
+
+        if (WORLD.previous === this.targetRoom) {
+            this.locked = false;
+        }   
+
+        const canOpen = this.lockedCondition(); 
+
+        if(!canOpen){
+            if(textNotificationHandler) textNotificationHandler.addText("It seems as though you need to complete something to open the door..");
+                this.locked = true; 
+                return true; 
+        }
+
+        if(canOpen){
             if(textNotificationHandler) textNotificationHandler.addText("Door unlocked!");
             this.locked = false; 
         }

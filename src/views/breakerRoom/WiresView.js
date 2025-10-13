@@ -1,12 +1,11 @@
 class WiresView extends View 
 {
-  constructor(gridSize = 5, cellSize = 1.2) {
+  constructor(gridSize = 5, cellSize = 1) {
   super();
 
   // Background sprite for the view
   this.background = SM.get("MetalWall"); // Load background sprite
   this.background.setSize(16, 9);        // Match canvas size
-
 
   // Define wire colors used in the puzzle
   this.colors = ['red', 'blue', 'green', 'yellow'];
@@ -17,7 +16,7 @@ class WiresView extends View
 
   // Calculate origin to center the grid on a 16x9 canvas
   this.origin = {
-    x: (16 - this.gridSize * this.cellSize) / 2,
+    x: (16 - this.gridSize * this.cellSize) / 6,
     y: (9 - this.gridSize * this.cellSize) / 2
   };
 
@@ -67,6 +66,12 @@ class WiresView extends View
   // Initialize grid cells and place endpoints
   this._initGrid();
   this._placeEndpoints();
+
+  this.textNotificationHandler = new TextNotificationHandler(0.5, 0.85, {holdFadeoutFor: 4});
+
+  this.slidingDoor = new StandaloneSlidingDoor(12, 2, 1, () => {}, true, 2, null, 2, 0, () => GS.is("Wires Solved"));
+
+  this.slidingDoor.setRoom(this);
 }
 
 _initGrid() {
@@ -216,10 +221,15 @@ draw() {
       }
     }
   }
+
+  this.slidingDoor.draw();
 }
 
 mousePressed(m) {
   // Get the grid cell under the mouse
+
+  if (this.slidingDoor.mousePressed(m)) {return true;} // stop propagation
+
   const cell = this._getCellAtMouse(m);
   if (!cell) return;
 
@@ -398,18 +408,21 @@ _onPuzzleComplete() {
   }
 
   // Add bonus time to global screen timer
-  if (screenTimer && typeof screenTimer.addTime === 'function') {
-    screenTimer.addTime(30); // +30 seconds
-  }
+  //if (screenTimer && typeof screenTimer.addTime === 'function') {
+    //screenTimer.addTime(30); // +30 seconds
+  //}
 
   // Show bonus notification
-  this.bonusNotif.addText("+30s");
+  //this.bonusNotif.addText("+30s");
+
+  //Update Game State
+  GS.set("Wires Solved");
 
   // Trigger screen shake effect
   this.shakeTime = 10;
 
   // Show puzzle completion message
-  this.textNotif.addText("Wire Puzzle Complete!");
+  this.textNotif.addText("Cryogenic Chamber Room Unlocked");
 
   // Exit interface mode
   window.activeInterface = null;
@@ -418,6 +431,7 @@ _onPuzzleComplete() {
 onEnter() {
   // Register this view with the renderer
   R.add(this);
+  this.slidingDoor.onEnter();
 }
 
 onExit() {
@@ -425,12 +439,16 @@ onExit() {
   this.textNotif.cleanup();
   this.bonusNotif.cleanup();
   R.remove(this);
+  this.slidingDoor.onExit();
+  this.textNotificationHandler.cleanup(); 
 }
 
 update(dt) {
   // Update notification animations
   this.textNotif.update(dt);
   this.bonusNotif.update(dt);
+  this.slidingDoor.update(dt);
+  this.textNotificationHandler.update(dt);
 }
 
 }

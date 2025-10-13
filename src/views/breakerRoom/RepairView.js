@@ -39,6 +39,9 @@ function repairItemUsed(itemName, x, y, width, height, notifHandler){
             // you fix the component if you use electrical tape on broken component
             else if((itemName == 'electricalTape') && (targetId == BROKEN_COMPONENT_ID)){
                 notifHandler.addText('You have fixed a broken component!')
+                setTimeout(() => {
+                    GS.set("Game Complete");
+                }, 500);
             }
             else if((itemName == 'voltimeter') && (targetId != BROKEN_COMPONENT_ID)){
                 notifHandler.addText('This component seems to be working fine.')

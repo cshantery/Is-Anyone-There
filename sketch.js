@@ -4,6 +4,7 @@ let SM = new SpriteManager(); // Sprite Manager
 let GS;
 let WORLD;
 
+let endscreenShown = false;
 let ended = false;
 
 // Interface state tracking
@@ -112,7 +113,10 @@ function draw() {
       //GS.incrementDeaths();
     //}
 
-    R.add(endScreen, 999);
+    if(!endscreenShown) {
+      R.add(endScreen, 999);
+      endscreenShown = true;
+    }
   }
   R.update(dt);
   R.draw();
@@ -196,29 +200,29 @@ function setupWorld() {
   const repairView = new RepairView();
   const wiresView = new WiresView();
 
-  // Door in Room B -> back to Room A (index 1), land on computerView (view 0)
+  // Door in Room B -> back to Room A (index 1), land on doorView (view 4)
   const EntranceB = new SlidingDoorView([{
-    x:12, y:2, scale:1,
+    x:6, y:2, scale:2,
     targetRoom: 0,        // <-- to room A
-    targetViewIndex: 0,
+    targetViewIndex: 4,
     lockedCondition : () => true
   }],SM.get("MetalWall"));
 
-  // Door in Room B -> to Room C (index 1), land on Cryo 1 (view 0)
-  const doorToCryoB = new SlidingDoorView([{
+  // Door in Room B -> to Room D (index 4), land on view TBD
+  const LifeSupportDoorB = new SlidingDoorView([{
     x:12, y:2, scale:1,
-    targetRoom: 2,        // <-- to room C
-    targetViewIndex: 0,
-    lockedCondition : () => true
+    targetRoom: null,        // not set yet
+    targetViewIndex: 4,
+    lockedCondition : () => false
   }],SM.get("MetalWall"));
 
   const roomB = new ViewManager();
   roomB.addView(repairView);
   roomB.addView(wiresView);
   roomB.addView(EntranceB);
-  roomB.addView(doorToCryoB);
-  doorToCryoB.setRoom?.(roomB);
+  roomB.addView(LifeSupportDoorB);
   EntranceB.setRoom?.(roomB);
+  LifeSupportDoorB.setRoom?.(roomB);
 
   // --- Room C (Cryo Chamber Room) ---
   //class PlainView extends View { constructor(r,g,b,label){ super(r,g,b,label); } }
@@ -230,11 +234,11 @@ function setupWorld() {
   const cryoView3 = new CryoView(2);
   const cryoView4 = new CryoView(3);
 
-  // Door in Room C -> back to Room B (index 1), land on repairView (view 0)
+  // Door in Room C -> back to Room B (index 1), land on wireView (view 1)
   const sdViewC = new SlidingDoorView([{
     x:12, y:2, scale:1,
     targetRoom: 1,        // <-- to room B
-    targetViewIndex: 0,
+    targetViewIndex: 1,
     lockedCondition : () => true
   }],SM.get("MetalWall"));
 
