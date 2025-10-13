@@ -40,6 +40,10 @@ function loadSprites() {
     SM.add("ActiveChamber3", loadImage('assets/placeholders/CryoChambercopy2.png'));
     SM.add("ActiveChamber4", loadImage('assets/placeholders/CryoChambercopy3.png'));
     
+    // New Cryo Chamber sprites
+    SM.add("emptyCryo", loadImage('assets/object/emptyCryo.webp'));
+    SM.add("fullCryo", loadImage('assets/object/fullCryo.webp'));
+    
     // breaker room
     SM.add("closedRepair", loadImage('assets/placeholders/breaker/closedRepair.png'));
     SM.add("openRepair", loadImage('assets/placeholders/breaker/openRepair.png'));
