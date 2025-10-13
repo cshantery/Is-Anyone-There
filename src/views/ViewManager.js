@@ -85,45 +85,45 @@ class ViewManager {
 }
 
 
-class GameState {
-  constructor() {
-    this.timerUp = false;
-    this.pinSolved = false;
+// class GameState {
+//   constructor() {
+//     this.timerUp = false;
+//     this.pinSolved = false;
 
-    this.gameComplete = false;
+//     this.gameComplete = false;
 
-    this.deaths = 0;
-  }
+//     this.deaths = 0;
+//   }
 
-  incrementDeaths() {
-    this.deaths = this.deaths + 1;
-  }
+//   incrementDeaths() {
+//     this.deaths = this.deaths + 1;
+//   }
 
-  getDeaths() {
-    return this.deaths;
-  }
+//   getDeaths() {
+//     return this.deaths;
+//   }
 
-  TimerDone() {
-    this.timerUp = true;
-  }
+//   TimerDone() {
+//     this.timerUp = true;
+//   }
 
-  getTimer() {
-    return this.timerUp;
-  }
+//   getTimer() {
+//     return this.timerUp;
+//   }
 
-  pinIsSolved() {
-    this.pinSolved = true;
-  }
+//   pinIsSolved() {
+//     this.pinSolved = true;
+//   }
 
-  getSolved() {
-    return this.pinSolved;
-  }
+//   getSolved() {
+//     return this.pinSolved;
+//   }
 
-  isEnded() {
-    return this.timerUp || this.gameComplete;
-  }
+//   isEnded() {
+//     return this.timerUp || this.gameComplete;
+//   }
 
-  getGameComplete() {
-    return this.gameComplete;
-  }
-}
+//   getGameComplete() {
+//     return this.gameComplete;
+//   }
+// }
