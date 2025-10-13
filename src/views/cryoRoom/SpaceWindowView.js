@@ -30,6 +30,7 @@ class SpaceWindow{
 
         push()
         fill(0,0,0)
+        noStroke();
         rect((this.x-this.borderSize) * u, (this.y-this.borderSize) * v,
          (this.width+this.borderSize*2) * u, (this.height+this.borderSize*2)*v)
         pop()

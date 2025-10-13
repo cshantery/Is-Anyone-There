@@ -5,7 +5,7 @@ class CryoChamber {
         this.scale = scale;
 
         // for hitbox, I just manually guessed, we need a good method to calculate these
-        this.width = 2.75
+        this.width = 2.25
         this.height = 5
 
         this.background = SM.get(img);
@@ -42,6 +42,7 @@ class CryoChamber {
 
         push()
         noFill();
+        noStroke();
         rect((this.x-this.borderSize) * u, (this.y-this.borderSize) * v,
          (this.width+this.borderSize*2) * u, (this.height+this.borderSize*2)*v)
         pop()
