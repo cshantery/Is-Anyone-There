@@ -90,6 +90,8 @@ class GameState {
     this.timerUp = false;
     this.pinSolved = false;
 
+    this.gameComplete = false;
+
     this.deaths = 0;
   }
 
@@ -118,6 +120,10 @@ class GameState {
   }
 
   isEnded() {
-    return this.pinSolved || this.timerUp;
+    return this.timerUp || this.gameComplete;
+  }
+
+  getGameComplete() {
+    return this.gameComplete;
   }
 }

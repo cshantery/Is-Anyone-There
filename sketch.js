@@ -96,7 +96,7 @@ function draw() {
 
   const dt = deltaTime / 1000;
   if(!ended) {
-    endScreen = new EndScreenView(GS.getSolved()); //update endscreen state
+    endScreen = new EndScreenView(GS.getGameComplete()); //update endscreen state
   }
 
   if(GS.isEnded()) {
@@ -104,7 +104,8 @@ function draw() {
     if(!GS.getSolved()) {
       GS.incrementDeaths();
     }
-    // R.add(endScreen, 999);
+
+    R.add(endScreen, 999);
   }
   R.update(dt);
   R.draw();
@@ -192,14 +193,16 @@ function setupWorld() {
   const EntranceB = new SlidingDoorView([{
     x:12, y:2, scale:1,
     targetRoom: 0,        // <-- to room A
-    targetViewIndex: 0
+    targetViewIndex: 0,
+    lockedCondition : () => true
   }],SM.get("MetalWall"));
 
   // Door in Room B -> to Room C (index 1), land on Cryo 1 (view 0)
   const doorToCryoB = new SlidingDoorView([{
     x:12, y:2, scale:1,
     targetRoom: 2,        // <-- to room C
-    targetViewIndex: 0
+    targetViewIndex: 0,
+    lockedCondition : () => true
   }],SM.get("MetalWall"));
 
   const roomB = new ViewManager();
@@ -224,7 +227,8 @@ function setupWorld() {
   const sdViewC = new SlidingDoorView([{
     x:12, y:2, scale:1,
     targetRoom: 1,        // <-- to room B
-    targetViewIndex: 0
+    targetViewIndex: 0,
+    lockedCondition : () => true
   }],SM.get("MetalWall"));
 
   const roomC = new ViewManager();
