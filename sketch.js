@@ -228,7 +228,6 @@ function setupWorld() {
   //class PlainView extends View { constructor(r,g,b,label){ super(r,g,b,label); } }
 
   const windowView = new SpaceWindowView();
-  //const redView   = new PlainView(200, 40, 40,   'Room C - RED');
   const cryoView1 = new CryoView(0);
   const cryoView2 = new CryoView(1);
   const cryoView3 = new CryoView(2);
