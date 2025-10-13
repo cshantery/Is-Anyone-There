@@ -67,4 +67,8 @@ class GameState {
     }
     // Object?
     //get(name) {}
+
+    getDeaths() {
+        return 5;
+    }
 }

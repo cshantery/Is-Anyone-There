@@ -62,13 +62,19 @@ function setup() {
     console.log("saved state found...");
     const savedData = JSON.parse(savedState);
     GS = new GameState();
-    GS.solved = savedData.solved;
-    GS.timerUp = savedData.timerUp;
+    if(savedData.solved && GS.is("Game Complete")) {
+      GS.unset("Game Complete")
+    }
+    if(savedData.timerUp && GS.is("Timer Up")) {
+      GS.unset("Timer Up")
+    }
   } else{
     console.log("no state found, creating new state...");
     GS = new GameState();
   }
 
+  // insert checkers here
+  GS.checkFor("Ended", () => { return GS.is("Game Complete") || GS.is("Timer Up") || GS.is("Player Died"); })
 
   R = new Renderer();
 
@@ -96,14 +102,15 @@ function draw() {
 
   const dt = deltaTime / 1000;
   if(!ended) {
-    endScreen = new EndScreenView(GS.getGameComplete()); //update endscreen state
+    endScreen = new EndScreenView(GS.is("Game Complete")); //update endscreen state
   }
 
-  if(GS.isEnded()) {
+  if(GS.is("Ended")) {
     ended = true;
-    if(!GS.getSolved()) {
-      GS.incrementDeaths();
-    }
+    /* -- Implement Tracking Deaths across restarts -- */
+    //if(!GS.getSolved()) {
+      //GS.incrementDeaths();
+    //}
 
     R.add(endScreen, 999);
   }
@@ -173,7 +180,7 @@ function setupWorld() {
     x:12, y:2.5, scale:0.8,
     targetRoom: 1,         // <-- ROOM B
     targetViewIndex: 0,    // land on first plain color view
-    lockedCondition : () => GS.pinSolved
+    lockedCondition : () => GS.is("Pin Solved")
   }]);
 
   const roomA = new ViewManager();

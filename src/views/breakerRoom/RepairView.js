@@ -34,7 +34,7 @@ function repairItemUsed(itemName, x, y, width, height, notifHandler){
             // You die if you use electrical tape on working component
             if((itemName == 'electricalTape') && (targetId != BROKEN_COMPONENT_ID)){
                 console.log('Used electrical tape on working component (player died)')
-                GS.TimerDone()
+                GS.set("Player Died")
             }
             // you fix the component if you use electrical tape on broken component
             else if((itemName == 'electricalTape') && (targetId == BROKEN_COMPONENT_ID)){
