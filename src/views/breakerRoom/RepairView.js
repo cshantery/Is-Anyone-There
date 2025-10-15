@@ -39,9 +39,13 @@ function repairItemUsed(itemName, x, y, width, height, notifHandler){
             // you fix the component if you use electrical tape on broken component
             else if((itemName == 'electricalTape') && (targetId == BROKEN_COMPONENT_ID)){
                 notifHandler.addText('You have fixed a broken component!')
+                
+                let string  = '>_  SYSTEM CONDITION STABILIZING... \n>_  RETURNING TO NORMAL OPERATION... \n>_  --- THANK YOU USER ---';
+                AI.addText(string);
+                
                 setTimeout(() => {
                     GS.set("Game Complete");
-                }, 500);
+                }, 8000);
             }
             else if((itemName == 'voltimeter') && (targetId != BROKEN_COMPONENT_ID)){
                 notifHandler.addText('This component seems to be working fine.')
@@ -402,14 +406,25 @@ class RepairView extends View {
         });
 
         this.componentHolder = new ComponentHolderObject(1.2, 5, 0.6, this.textNotificationHandler, ()=>{});
+
+        this.slidingDoor = new StandaloneSlidingDoor(12, 2, 1, () => {}, true, 2, null, 2, 0, () => GS.is("Wires Solved"));
+
+        this.slidingDoor.setRoom(this);
     }
 
     update(dt) {
         // pass time to fading logic for text notifications
         this.textNotificationHandler.update(dt);
+        this.slidingDoor.update(dt);
     }
 
-    draw() {}
+    draw() {
+        this.slidingDoor.draw();
+    }
+
+    mousePressed(m) {
+        if (this.slidingDoor.mousePressed(m)) {return true;} // stop propagation
+    }
 
     onEnter() {
         R.add(this.background);
@@ -419,6 +434,7 @@ class RepairView extends View {
         // call on enters
         this.repairCabinet.onEnter();
         this.componentHolder.onEnter();
+        this.slidingDoor.onEnter();
     }
     
     onExit() {
@@ -429,5 +445,6 @@ class RepairView extends View {
         // call on exits
         this.repairCabinet.onExit();
         this.componentHolder.onExit();
+        this.slidingDoor.onExit();
     }
 }

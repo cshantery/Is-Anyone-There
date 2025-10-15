@@ -3,6 +3,7 @@ let R;
 let SM = new SpriteManager(); // Sprite Manager
 let GS;
 let WORLD;
+let AI = new AiMessageHandler(1, 7.3);
 
 let endscreenShown = false;
 let ended = false;
@@ -87,8 +88,10 @@ function setup() {
     R.add(screenTimer, 1);
 
     setupWorld(); // ⬅️ new
-  });
 
+    GS.set("Game Started"); // for General Use
+    GS.set("Show AI Startup"); // for AI Messages
+  });
 
   // High z so it draws on top until removed
   R.add(startScreen, 999);
@@ -116,10 +119,30 @@ function draw() {
     if(!endscreenShown) {
       R.add(endScreen, 999);
       endscreenShown = true;
+      AI.cleanup();
     }
   }
+
+  if(GS.is("Show AI Startup")) {
+    bootupAI();
+  }
+  
   R.update(dt);
+  AI.update(dt);
   R.draw();
+}
+
+//block to handle initial AI startup Text
+function bootupAI() {
+  let string  = '>_  A.I.A. - ARTIFICIAL INTELLIGENCE ASSISTANT: TERMINAL v3.2.1 \n>_  INITIATING SECURE BOOT PROTOCOL... \n>_  BOOTING DRIVERS...';
+  AI.addText(string);
+  string  = '>_  SCANNING FOR PERIPHERALS... \n>_  NETWORK CONNECTION: SECURE \n>_  WARNING: UNUSUAL ACTIVITY DETECTED. ALL SESSIONS ARE LOGGED.';
+  AI.addText(string);
+  string  = '>_  LOADING VESSEL CONDITION... \n>_  SCANNING SYSTEM DIAGNOSTIC REPORTS... \n>_  COMPILING ANALYTICS...';
+  AI.addText(string);
+  string  = '>_  MULTIPLE SYSTEMS CRITICAL \n>_  ESTIMATED HUMAN HABITABILITY WINDOW SHOWN IN TOP LEFT \n>_  FAILURE IMMINENT - FIX IMMEDIATELY';
+  AI.addText(string);
+  GS.unset("Show AI Startup");
 }
 
 function windowResized() {

@@ -25,7 +25,7 @@ class DisplayText{
         // --- temporary bit for visibility - NOT PART OF ACTUAL DISPLAYTEXT CLASS
         let w = textWidth(this.content);
         let h = textAscent() + textDescent();
-        fill(122, 122, 102, 90)
+        fill(102, 102, 82, 200)
         rect(this.x*u-10, this.y*v-10, w+20, h+20, 8)
 
         // ---

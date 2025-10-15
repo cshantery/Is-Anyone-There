@@ -24,7 +24,7 @@ class Timer {
 
 class ScreenTimer {
     constructor(onEnd = () => {}) {
-        this.timer = new Timer(120000);   
+        this.timer = new Timer(240000);   
         this.label = '';
         this.onEnd = onEnd;
     }
