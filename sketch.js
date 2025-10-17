@@ -61,14 +61,17 @@ function setup() {
   const savedState = localStorage.getItem('currentGameState');
 
   if(savedState){
-    console.log("saved state found...");
     const savedData = JSON.parse(savedState);
+    console.log(`saved state found...Current death count: ${savedData.deaths || 0}`);
+   
     GS = new GameState();
     if(savedData.solved && GS.is("Game Complete")) {
       GS.unset("Game Complete")
     }
     if(savedData.timerUp && GS.is("Timer Up")) {
       GS.unset("Timer Up")
+      // Load the saved death count into the new GameState object
+      GS.deaths = savedData.deaths || 0;
     }
   } else{
     console.log("no state found, creating new state...");

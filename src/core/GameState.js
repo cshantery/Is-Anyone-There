@@ -12,6 +12,7 @@ class GameState {
     constructor() {
         this.states = new Set(); // simple states, string set
         this.checks = new Map(); // array for functions
+        this.deaths = 0          // count for deaths 
     }
     /**
      * Adds to the state list. this will check for exact values.
@@ -68,7 +69,11 @@ class GameState {
     // Object?
     //get(name) {}
 
+    //increase death count by one
+    incrimentDeaths(){
+        this.deaths++;
+    }
     getDeaths() {
-        return 5;
+        return this.deaths;
     }
 }
