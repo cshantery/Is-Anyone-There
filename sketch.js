@@ -65,6 +65,8 @@ function setup() {
     console.log(`saved state found...Current death count: ${savedData.deaths || 0}`);
    
     GS = new GameState();
+    GS.deaths = savedData.deaths || 0;
+    
     if(savedData.solved && GS.is("Game Complete")) {
       GS.unset("Game Complete")
     }
